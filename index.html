@@ -48,18 +48,18 @@
                 <input type="range" id="wealth" min="1" max="10" value="5" oninput="document.getElementById('wealthNum').innerText = this.value" class="mt-2">
             </div>
 
-            <button onclick="startGame()" class="w-full bg-white text-black font-bold py-4 uppercase text-xs tracking-widest hover:bg-zinc-200">Genera Destino</button>
+            <button onclick="startGame()" class="w-full bg-white text-black font-bold py-4 uppercase text-xs tracking-widest hover:bg-zinc-200 transition-all">Genera Destino</button>
         </div>
     </div>
 
     <div id="game" class="hidden fixed inset-0 flex flex-col bg-black overflow-hidden">
-        <header class="p-4 border-b border-zinc-900 flex justify-between items-center bg-black z-10">
+        <header class="p-4 border-b border-zinc-900 flex justify-between items-center bg-black">
             <span class="historical-font italic text-xl">Life finds a Way</span>
             <span id="info" class="text-[10px] text-zinc-500 uppercase tracking-widest"></span>
         </header>
         <div id="log" class="flex-1 overflow-y-auto p-6 space-y-10 max-w-2xl mx-auto w-full"></div>
         <footer class="p-6 border-t border-zinc-900 bg-black">
-            <div class="max-w-2xl mx-auto text-center">
+            <div class="max-w-2xl mx-auto">
                 <textarea id="action" class="w-full h-24 mb-4 p-4 text-sm bg-zinc-950 border border-zinc-900 text-zinc-300" placeholder="Qual è la tua prossima mossa?"></textarea>
                 <button onclick="playTurn(12)" class="bg-white text-black px-10 py-3 text-xs font-bold uppercase tracking-widest">Avanza 1 Anno</button>
             </div>
@@ -91,15 +91,15 @@
             }
 
             const loading = document.createElement('p');
-            loading.innerText = "Interrogando le cronache...";
+            loading.innerText = "Interrogando le stelle...";
             loading.className = "text-zinc-600 italic text-[10px] uppercase tracking-widest animate-pulse";
             log.appendChild(loading);
             log.scrollTop = log.scrollHeight;
 
-            // MODELLO 8B: MASSIMA COMPATIBILITÀ
-            const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=" + key;
+            // URL V1 CON MODELLO PRO PER MASSIMA DISPONIBILITÀ
+            const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=" + key;
 
-            const prompt = `Sei il GM di 'Life finds a Way'. PG: ${document.getElementById('gender').value}, ${document.getElementById('age').value} anni. CONTESTO: Anno ${document.getElementById('year').value}, ${document.getElementById('city').value}, Ceto ${document.getElementById('wealth').value}/10. AZIONE: "${currentAction}". STORIA: ${JSON.stringify(gameHistory.slice(-2))}. Rispondi in italiano narrativo storico. Turno 0: Prologo totale. Fine Turno 0: Aggiungi '---DESCRIZIONE VISIVA IA---' e prompt immagine inglese B&W.`;
+            const prompt = `Sei il GM di 'Life finds a Way'. PG: ${document.getElementById('gender').value}, ${document.getElementById('age').value} anni. CONTESTO: Anno ${document.getElementById('year').value}, ${document.getElementById('city').value}, Ceto ${document.getElementById('wealth').value}/10. AZIONE: "${currentAction}". STORIA: ${JSON.stringify(gameHistory.slice(-2))}. REQUISITI: Turno 0: Prologo totale. Turno > 0: Esito azione e evento storico reale. Lingua: Italiano. Stile: Crudo e letterario.`;
 
             try {
                 const response = await fetch(API_URL, {
@@ -109,7 +109,10 @@
                 });
 
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.error ? data.error.message : "Errore");
+                
+                if (!response.ok) {
+                    throw new Error(data.error ? data.error.message : "Errore Sconosciuto");
+                }
 
                 const aiText = data.candidates[0].content.parts[0].text;
                 loading.remove();
@@ -124,8 +127,8 @@
                 log.scrollTop = log.scrollHeight;
             } catch (err) {
                 loading.innerText = "ERRORE: " + err.message;
-                loading.style.color = "red";
-                console.error(err);
+                loading.style.color = "#ff4444";
+                console.error("Dettaglio:", err);
             }
         }
     </script>
