@@ -28,14 +28,14 @@
         
         <div class="space-y-6">
             <div class="flex flex-col">
-                <label class="text-[9px] uppercase tracking-[0.2em] text-gray-500 mb-1">Google API Key</label>
-                <input type="password" id="apiKey" placeholder="AIzaSy...">
+                <label class="text-[9px] uppercase tracking-[0.2em] text-gray-500 mb-1">Google API Key (AIza...)</label>
+                <input type="password" id="apiKey" placeholder="Incolla qui la tua chiave">
             </div>
             
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="text-[9px] uppercase tracking-[0.2em] text-gray-500 mb-1">Anno di inizio</label>
-                    <input type="number" id="year" value="1000" onchange="updateImage()">
+                    <input type="number" id="year" value="1000">
                 </div>
                 <div>
                     <label class="text-[9px] uppercase tracking-[0.2em] text-gray-500 mb-1">Città / Regione</label>
@@ -74,102 +74,4 @@
         <div id="log" class="flex-1 overflow-y-auto p-6 space-y-12 max-w-3xl mx-auto w-full pt-10"></div>
         <footer class="p-6 border-t border-zinc-900 bg-black">
             <div class="max-w-3xl mx-auto">
-                <textarea id="action" class="w-full h-24 mb-4 p-4 text-sm bg-zinc-950 border border-zinc-800 text-zinc-300" placeholder="Qual è la tua prossima mossa?"></textarea>
-                <div class="flex gap-4">
-                    <button onclick="turn(1)" class="border border-zinc-800 px-8 py-3 text-[10px] uppercase tracking-widest hover:border-white transition-all">Avanza 1 Mese</button>
-                    <button onclick="turn(12)" class="border border-zinc-800 px-8 py-3 text-[10px] uppercase tracking-widest hover:border-white transition-all font-bold">Avanza 1 Anno</button>
-                </div>
-            </div>
-        </footer>
-    </div>
-
-    <script>
-        let gameHistory = [];
-
-        function updateImage() {
-            const year = document.getElementById('year').value;
-            let q = "ancient";
-            if(year < 500) q = "ancient-rome";
-            else if(year < 1450) q = "medieval-village";
-            else if(year < 1850) q = "renaissance-street";
-            else if(year < 1945) q = "vintage-industrial";
-            else q = "modern-city";
-            document.getElementById('previewImg').src = `https://images.unsplash.com/photo-1?q=80&w=1000&auto=format&fit=crop&sig=${year}&q=${q},bw`;
-        }
-
-        function start() {
-            const key = document.getElementById('apiKey').value.trim();
-            if(!key) return alert("Inserisci la API Key per iniziare!");
-            document.getElementById('setup').classList.add('hidden');
-            document.getElementById('game').classList.remove('hidden');
-            const city = document.getElementById('city').value || "un luogo ignoto";
-            const year = document.getElementById('year').value;
-            const gender = document.getElementById('gender').value;
-            const age = document.getElementById('age').value;
-            document.getElementById('infoLabel').innerText = `${city} | ${year} d.C. | ${gender} | Età: ${age}`;
-            turn(0);
-        }
-
-        async function turn(months) {
-            const key = document.getElementById('apiKey').value.trim();
-            const actionInput = document.getElementById('action');
-            let action = actionInput.value;
-            const log = document.getElementById('log');
-            const gender = document.getElementById('gender').value;
-            const age = document.getElementById('age').value;
-            const year = document.getElementById('year').value;
-            const city = document.getElementById('city').value || "ignoto";
-            const wealth = document.getElementById('wealth').value;
-
-            if (gameHistory.length === 0 && !action) action = "Inizia la mia storia.";
-
-            const loading = document.createElement('p');
-            loading.className = "text-gray-600 italic text-[10px] animate-pulse uppercase tracking-widest";
-            loading.innerText = "Il destino si sta compiendo...";
-            log.appendChild(loading);
-            
-            const prompt = `GM di 'Life finds a Way'. 
-            PG: ${gender}, ${age} anni. CONTESTO: Anno ${year}, Luogo ${city}, Ceto ${wealth}/10. 
-            AZIONE: "${action}". MESI: ${months}. HISTORY: ${JSON.stringify(gameHistory.slice(-2))}.
-            REQUISITI:
-            - Turno 0: Prologo totale. Famiglia, situazione regno, aspetto.
-            - Fine Turno 0: Sezione "---DESCRIZIONE VISIVA IA---" con prompt in INGLESE per immagine B&W del PG nel contesto.
-            - Turno > 0: Esito azione, famiglia, evento storico reale.
-            - Stile: Letterario, crudo, immersivo. Italiano.`;
-
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
-                    method: "POST", headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-                const data = await res.json();
-                let text = data.candidates[0].content.parts[0].text;
-                loading.remove();
-                
-                const turnDiv = document.createElement('div');
-                turnDiv.className = "fade-in border-l border-zinc-800 pl-6 py-2";
-                
-                if (gameHistory.length === 0) {
-                    const parts = text.split("---DESCRIZIONE VISIVA IA---");
-                    turnDiv.innerHTML = `
-                        <p class="text-[9px] text-zinc-600 mb-4 uppercase tracking-[0.3em]">Genesi</p>
-                        <div class="text-base leading-relaxed text-zinc-300 mb-8">${parts[0].replace(/\n/g, '<br>')}</div>
-                        <div class="bg-zinc-950 border border-zinc-900 p-6 rounded">
-                            <p class="text-[10px] text-white uppercase tracking-widest mb-4 font-bold border-b border-zinc-800 pb-2">Ritratto del Personaggio (Prompt per Immagine)</p>
-                            <p class="text-xs italic text-zinc-500 typewriter leading-relaxed">${parts[1] || ""}</p>
-                        </div>`;
-                } else {
-                    turnDiv.innerHTML = `
-                        <p class="text-[9px] text-zinc-600 mb-4 uppercase tracking-[0.3em]">+ ${months} mesi</p>
-                        <div class="text-base leading-relaxed text-zinc-300">${text.replace(/\n/g, '<br>')}</div>`;
-                }
-                
-                log.appendChild(turnDiv);
-                actionInput.value = "";
-                gameHistory.push({action, text});
-                log.scrollTop = log.scrollHeight;
-            } catch (e) { loading.innerText = "Errore API. Controlla la chiave."; }
-        }
-    </script>
-</body>
-</html>
+                <textarea id="action" class="w-full h-24 mb-4 p-4 text-sm bg-zinc
