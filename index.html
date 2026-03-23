@@ -14,7 +14,6 @@
         .hidden { display: none; }
         .fade-in { animation: fadeIn 0.8s forwards; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* Stile slider */
         input[type=range] { -webkit-appearance: none; background: #222; height: 4px; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 15px; width: 15px; background: #fff; cursor: pointer; }
     </style>
@@ -26,41 +25,24 @@
         <p class="text-[10px] text-center tracking-[0.3em] text-zinc-500 uppercase">Historical Life Simulator</p>
         
         <div class="space-y-4 pt-6 border-t border-zinc-900">
-            <div class="flex flex-col">
-                <label class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Google API Key</label>
-                <input type="password" id="apiKey" placeholder="Incolla AIza...">
-            </div>
+            <input type="password" id="apiKey" placeholder="Incolla AIza...">
             
             <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Anno</label>
-                    <input type="number" id="year" value="1000">
-                </div>
-                <div>
-                    <label class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Città</label>
-                    <input type="text" id="city" placeholder="es. Roma">
-                </div>
+                <input type="number" id="year" value="1000" placeholder="Anno">
+                <input type="text" id="city" placeholder="Città">
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Sesso</label>
-                    <select id="gender">
-                        <option value="Maschio">Maschio</option>
-                        <option value="Femmina">Femmina</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Età iniziale</label>
-                    <input type="number" id="age" value="0">
-                </div>
+                <select id="gender">
+                    <option value="Maschio">Maschio</option>
+                    <option value="Femmina">Femmina</option>
+                </select>
+                <input type="number" id="age" value="0" placeholder="Età">
             </div>
 
             <div class="text-center py-4">
-                <label class="text-[10px] text-gray-500 uppercase tracking-widest">Ceto Sociale</label>
-                <input type="range" id="wealth" min="1" max="10" value="5" oninput="document.getElementById('wealthNum').innerText = this.value">
-                <div id="wealthNum" class="text-2xl font-bold mt-2">5</div>
-                <p class="text-[9px] text-zinc-600 uppercase tracking-tighter">(1: Povero - 10: Nobile)</p>
+                <label class="text-[10px] text-gray-500 uppercase tracking-widest">Ricchezza: <span id="wealthNum" class="text-white font-bold text-lg">5</span></label>
+                <input type="range" id="wealth" min="1" max="10" value="5" oninput="document.getElementById('wealthNum').innerText = this.value" class="mt-2">
             </div>
 
             <button onclick="startGame()" class="w-full bg-white text-black font-bold py-4 uppercase text-xs tracking-widest hover:bg-zinc-200">Genera Destino</button>
@@ -76,9 +58,7 @@
         <footer class="p-6 border-t border-zinc-900 bg-black">
             <div class="max-w-2xl mx-auto">
                 <textarea id="action" class="w-full h-24 mb-4 p-4 text-sm bg-zinc-950 border border-zinc-900" placeholder="Qual è la tua prossima mossa?"></textarea>
-                <div class="flex gap-4">
-                    <button onclick="playTurn(12)" class="bg-white text-black px-10 py-3 text-xs font-bold uppercase tracking-widest">Avanza 1 Anno</button>
-                </div>
+                <button onclick="playTurn(12)" class="bg-white text-black px-10 py-3 text-xs font-bold uppercase tracking-widest">Avanza 1 Anno</button>
             </div>
         </footer>
     </div>
@@ -108,21 +88,15 @@
             }
 
             const loading = document.createElement('p');
-            loading.innerText = "Tessendo le trame del tempo...";
+            loading.innerText = "Interrogando le stelle...";
             loading.className = "text-zinc-600 italic text-[10px] uppercase tracking-widest animate-pulse";
             log.appendChild(loading);
             log.scrollTop = log.scrollHeight;
 
-            const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + key;
-            const prompt = `GM di 'Life finds a Way'. 
-            PG: ${document.getElementById('gender').value}, ${document.getElementById('age').value} anni. 
-            CONTESTO: Anno ${document.getElementById('year').value}, ${document.getElementById('city').value}, Ceto ${document.getElementById('wealth').value}/10. 
-            AZIONE: "${currentAction}". STORIA: ${JSON.stringify(gameHistory.slice(-2))}.
-            REQUISITI: 
-            - Turno 0: Prologo totale (nascita/famiglia/contesto). 
-            - Turno > 0: Esito azione e evento storico. 
-            - Fine Turno 0: Sezione '---DESCRIZIONE VISIVA IA---' con prompt immagine inglese B&W.
-            - Lingua: Italiano. Stile: Crudo e letterario.`;
+            // URL CAMBIATO A V1 (STABILE)
+            const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + key;
+
+            const prompt = `GM di 'Life finds a Way'. PG: ${document.getElementById('gender').value}, ${document.getElementById('age').value} anni. CONTESTO: Anno ${document.getElementById('year').value}, ${document.getElementById('city').value}, Ceto ${document.getElementById('wealth').value}/10. AZIONE: "${currentAction}". STORIA: ${JSON.stringify(gameHistory.slice(-2))}. REQUISITI: Turno 0: Prologo totale. Turno > 0: Esito azione e evento storico reale. Fine Turno 0: Sezione '---DESCRIZIONE VISIVA IA---' con prompt immagine inglese B&W. Lingua: Italiano. Stile: Crudo e letterario.`;
 
             try {
                 const response = await fetch(API_URL, {
@@ -130,8 +104,13 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
+
+                if (!response.ok) {
+                    const errorJson = await response.json();
+                    throw new Error(errorJson.error.message || "Errore sconosciuto");
+                }
+
                 const data = await response.json();
-                if (data.error) throw new Error(data.error.message);
                 const aiText = data.candidates[0].content.parts[0].text;
                 loading.remove();
 
@@ -145,6 +124,8 @@
                 log.scrollTop = log.scrollHeight;
             } catch (err) {
                 loading.innerText = "ERRORE: " + err.message;
+                loading.style.color = "red";
+                console.error(err);
             }
         }
     </script>
