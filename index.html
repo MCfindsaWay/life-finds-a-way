@@ -1,56 +1,81 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8"><title>Life finds a Way - Last Stand</title>
+    <meta charset="UTF-8"><title>Life finds a Way</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>body{background:#000;color:#fff;font-family:sans-serif;}</style>
+    <style>body{background:#000;color:#fff;font-family:sans-serif;}input,textarea{background:#111;border:1px solid #333;color:#fff;padding:12px;width:100%;}</style>
 </head>
 <body class="p-10 flex flex-col items-center">
-    <div id="setup" class="max-w-md w-full space-y-4">
-        <h1 class="text-3xl italic text-center mb-8 font-serif">Life finds a Way</h1>
-        <input type="password" id="apiKey" class="w-full p-4 bg-zinc-900 border border-zinc-800 rounded text-white" placeholder="Incolla la nuova chiave AIza...">
-        <button onclick="testDestiny()" class="w-full bg-white text-black font-bold py-4 uppercase tracking-widest">Genera Destino</button>
-        <p id="debug" class="text-[10px] text-zinc-600 text-center font-mono"></p>
+    <div id="setup" class="max-w-md w-full space-y-6">
+        <h1 class="text-3xl italic text-center font-serif text-white">Life finds a Way</h1>
+        <p class="text-[10px] text-zinc-500 text-center uppercase tracking-widest">Utilizzando Gemini 3 Flash Preview</p>
+        <input type="password" id="apiKey" class="w-full" placeholder="Incolla la tua chiave AIza...">
+        <button onclick="startGame()" class="w-full bg-white text-black font-bold py-4 uppercase hover:bg-zinc-200 transition-colors">Entra nel Destino</button>
     </div>
+
     <div id="game" class="hidden max-w-2xl w-full">
-        <div id="output" class="text-lg leading-relaxed text-zinc-300 border-l-2 border-white pl-6"></div>
+        <div id="log" class="space-y-6 text-lg leading-relaxed text-zinc-300 mb-20"></div>
+        <div class="fixed bottom-0 left-0 w-full p-6 bg-black border-t border-zinc-900">
+            <div class="max-w-2xl mx-auto flex gap-2">
+                <input type="text" id="action" class="flex-1" placeholder="Qual è la tua prossima mossa?">
+                <button onclick="playTurn()" class="bg-white text-black px-8 font-bold uppercase text-xs">Invia</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        async function testDestiny() {
+        async function startGame() {
             const key = document.getElementById('apiKey').value.trim();
-            const debug = document.getElementById('debug');
-            if(!key) return alert("Inserisci la chiave!");
-            
-            const btn = document.querySelector('button');
-            btn.innerText = "TENTATIVO IN CORSO...";
-            btn.disabled = true;
+            if(!key) return alert("Manca la chiave!");
+            document.getElementById('setup').classList.add('hidden');
+            document.getElementById('game').classList.remove('hidden');
+            playTurn("Inizia la mia storia. Sono nato nel 1000 d.C. a Roma in una famiglia povera. Descrivi brevemente il prologo in italiano.");
+        }
 
-            // TENTIAMO IL MODELLO PIÙ COMPATIBILE IN ASSOLUTO
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${key}`;
-            
+        async function playTurn(customPrompt) {
+            const key = document.getElementById('apiKey').value.trim();
+            const log = document.getElementById('log');
+            const actionInput = document.getElementById('action');
+            const promptText = customPrompt || actionInput.value;
+
+            const loading = document.createElement('p');
+            loading.innerText = "Consultando il destino...";
+            loading.className = "text-zinc-500 italic text-sm animate-pulse";
+            log.appendChild(loading);
+
+            // URL AGGIORNATO AL MODELLO CHE VEDI NELLO SCREENSHOT
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${key}`;
+
             try {
-                const res = await fetch(url, {
+                const response = await fetch(url, {
                     method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({contents: [{parts: [{text: "Scrivi una riga: Ciao mondo storico."}]}]})
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptText }] }]
+                    })
                 });
+
+                const data = await response.json();
                 
-                const data = await res.json();
-                
-                if(!res.ok) {
-                    debug.innerText = "Errore: " + (data.error ? data.error.message : "Sconosciuto");
+                if(!response.ok) {
                     throw new Error(data.error ? data.error.message : "Errore");
                 }
+
+                loading.remove();
+                const aiResponse = data.candidates[0].content.parts[0].text;
                 
-                document.getElementById('setup').classList.add('hidden');
-                document.getElementById('game').classList.remove('hidden');
-                document.getElementById('output').innerHTML = data.candidates[0].content.parts[0].text;
+                const entry = document.createElement('div');
+                entry.className = "border-l-2 border-white pl-6 mb-8 fade-in";
+                entry.innerHTML = aiResponse.replace(/\n/g, '<br>');
+                log.appendChild(entry);
                 
+                actionInput.value = "";
+                window.scrollTo(0, document.body.scrollHeight);
+
             } catch(e) {
+                loading.innerText = "ERRORE: " + e.message;
+                loading.style.color = "red";
                 console.error(e);
-                btn.innerText = "RIPROVA";
-                btn.disabled = false;
             }
         }
     </script>
