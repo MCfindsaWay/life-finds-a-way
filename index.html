@@ -1,48 +1,93 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8"><title>Life finds a Way</title>
+    <meta charset="UTF-8"><title>Life finds a Way - Debug</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>body{background:#000;color:#fff;font-family:sans-serif;}input,textarea{background:#111;border:1px solid #333;color:#fff;padding:12px;width:100%;}</style>
 </head>
 <body class="p-6">
     <div id="setup" class="max-w-md mx-auto space-y-6">
-        <h1 class="text-3xl text-center italic">Life finds a Way</h1>
-        <input type="password" id="apiKey" placeholder="Incolla API Key">
-        <button onclick="start()" class="w-full bg-white text-black font-bold py-4 uppercase">Inizia</button>
+        <h1 class="text-3xl text-center italic font-serif">Life finds a Way</h1>
+        <p class="text-[10px] text-center text-zinc-500 uppercase tracking-widest">System Diagnostics Mode</p>
+        <input type="password" id="apiKey" placeholder="Incolla la tua API Key">
+        <button onclick="diagnoseAndStart()" class="w-full bg-white text-black font-bold py-4 uppercase">Verifica e Inizia</button>
+        <div id="debugLog" class="text-[10px] text-zinc-500 font-mono mt-4 max-h-40 overflow-auto"></div>
     </div>
+
     <div id="game" class="hidden fixed inset-0 flex flex-col bg-black p-6">
-        <div id="log" class="flex-1 overflow-y-auto space-y-6"></div>
-        <textarea id="action" class="mt-4" placeholder="Cosa fai?"></textarea>
-        <button onclick="turn()" class="bg-white text-black p-4 mt-2 font-bold">ESEGUI</button>
+        <div id="log" class="flex-1 overflow-y-auto space-y-6 pt-10"></div>
+        <textarea id="action" class="mt-4 p-4 text-sm bg-zinc-950 border border-zinc-800" placeholder="Qual è la tua mossa?"></textarea>
+        <button onclick="turn()" class="bg-white text-black p-4 mt-2 font-bold uppercase tracking-widest">Esegui Turno</button>
     </div>
+
     <script>
-        async function start() {
-            document.getElementById('setup').classList.add('hidden');
-            document.getElementById('game').classList.remove('hidden');
-            turn();
+        let validModel = "";
+
+        async function diagnoseAndStart() {
+            const key = document.getElementById('apiKey').value.trim();
+            const debug = document.getElementById('debugLog');
+            if(!key) return alert("Manca la chiave!");
+
+            debug.innerHTML = "Verifica modelli disponibili...<br>";
+            
+            try {
+                // Chiediamo a Google la lista dei modelli autorizzati per QUESTA chiave
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+                const data = await res.json();
+
+                if(!res.ok) throw new Error(data.error.message);
+
+                // Cerchiamo un modello Flash o Pro nella lista restituita
+                const models = data.models || [];
+                debug.innerHTML += `Trovati ${models.length} modelli.<br>`;
+                
+                const flash = models.find(m => m.name.includes("gemini-1.5-flash"));
+                const pro = models.find(m => m.name.includes("gemini-pro") || m.name.includes("gemini-1.0-pro"));
+                
+                if (flash) validModel = flash.name;
+                else if (pro) validModel = pro.name;
+                else if (models.length > 0) validModel = models[0].name;
+
+                if (validModel) {
+                    debug.innerHTML += `Modello selezionato: ${validModel}<br>Avvio gioco...`;
+                    setTimeout(() => {
+                        document.getElementById('setup').classList.add('hidden');
+                        document.getElementById('game').classList.remove('hidden');
+                        turn();
+                    }, 1000);
+                } else {
+                    debug.innerHTML += "<span class='text-red-500'>Nessun modello Gemini trovato per questa chiave. Assicurati di aver creato la chiave in AI Studio.</span>";
+                }
+            } catch(e) {
+                debug.innerHTML += `<span class='text-red-500'>ERRORE DIAGNOSI: ${e.message}</span>`;
+            }
         }
+
         async function turn() {
             const key = document.getElementById('apiKey').value.trim();
             const log = document.getElementById('log');
-            const action = document.getElementById('action').value || "Inizia la mia storia.";
+            const action = document.getElementById('action').value || "Inizia la mia storia. Genera prologo narrativo in italiano.";
+            
             const loading = document.createElement('p');
-            loading.innerText = "Scrivendo...";
+            loading.innerText = "Interrogando il destino...";
+            loading.className = "text-zinc-500 italic text-xs animate-pulse";
             log.appendChild(loading);
 
-            // URL STABILE V1 (NON BETA)
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${key}`;
+            // Usiamo il modello trovato dalla diagnosi
+            const url = `https://generativelanguage.googleapis.com/v1beta/${validModel}:generateContent?key=${key}`;
             
             try {
                 const res = await fetch(url, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({contents: [{parts: [{text: action + " (Rispondi in italiano narrativo storico)"}]}]})
+                    body: JSON.stringify({contents: [{parts: [{text: action}]}]})
                 });
                 const data = await res.json();
                 if(!res.ok) throw new Error(data.error.message);
+                
                 loading.remove();
-                log.innerHTML += `<div class='border-l p-4 mb-4'>${data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>')}</div>`;
+                const aiText = data.candidates[0].content.parts[0].text;
+                log.innerHTML += `<div class='border-l-2 border-zinc-800 pl-6 mb-8 text-zinc-300 leading-relaxed'>${aiText.replace(/\n/g, '<br>')}</div>`;
                 document.getElementById('action').value = "";
                 log.scrollTop = log.scrollHeight;
             } catch(e) {
