@@ -27,32 +27,20 @@
         <div class="space-y-4 pt-6 border-t border-zinc-900">
             <div>
                 <label class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Google API Key</label>
-                <input type="password" id="apiKey" placeholder="Incolla qui la tua chiave AIza...">
+                <input type="password" id="apiKey" placeholder="Incolla AIza...">
             </div>
             
             <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Anno</label>
-                    <input type="number" id="year" value="1000">
-                </div>
-                <div>
-                    <label class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Città</label>
-                    <input type="text" id="city" placeholder="es. Roma">
-                </div>
+                <input type="number" id="year" value="1000" placeholder="Anno">
+                <input type="text" id="city" placeholder="Città">
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Sesso</label>
-                    <select id="gender">
-                        <option value="Maschio">Maschio</option>
-                        <option value="Femmina">Femmina</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Età iniziale</label>
-                    <input type="number" id="age" value="0">
-                </div>
+                <select id="gender">
+                    <option value="Maschio">Maschio</option>
+                    <option value="Femmina">Femmina</option>
+                </select>
+                <input type="number" id="age" value="0" placeholder="Età">
             </div>
 
             <div class="text-center py-4">
@@ -60,20 +48,20 @@
                 <input type="range" id="wealth" min="1" max="10" value="5" oninput="document.getElementById('wealthNum').innerText = this.value" class="mt-2">
             </div>
 
-            <button onclick="startGame()" class="w-full bg-white text-black font-bold py-4 uppercase text-xs tracking-widest hover:bg-zinc-200 transition-colors">Genera Destino</button>
+            <button onclick="startGame()" class="w-full bg-white text-black font-bold py-4 uppercase text-xs tracking-widest hover:bg-zinc-200">Genera Destino</button>
         </div>
     </div>
 
     <div id="game" class="hidden fixed inset-0 flex flex-col bg-black overflow-hidden">
-        <header class="p-4 border-b border-zinc-900 flex justify-between items-center">
-            <span class="historical-font italic text-xl italic">Life finds a Way</span>
+        <header class="p-4 border-b border-zinc-900 flex justify-between items-center bg-black z-10">
+            <span class="historical-font italic text-xl">Life finds a Way</span>
             <span id="info" class="text-[10px] text-zinc-500 uppercase tracking-widest"></span>
         </header>
         <div id="log" class="flex-1 overflow-y-auto p-6 space-y-10 max-w-2xl mx-auto w-full"></div>
         <footer class="p-6 border-t border-zinc-900 bg-black">
-            <div class="max-w-2xl mx-auto">
+            <div class="max-w-2xl mx-auto text-center">
                 <textarea id="action" class="w-full h-24 mb-4 p-4 text-sm bg-zinc-950 border border-zinc-900 text-zinc-300" placeholder="Qual è la tua prossima mossa?"></textarea>
-                <button onclick="playTurn(12)" class="bg-white text-black px-10 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200">Avanza 1 Anno</button>
+                <button onclick="playTurn(12)" class="bg-white text-black px-10 py-3 text-xs font-bold uppercase tracking-widest">Avanza 1 Anno</button>
             </div>
         </footer>
     </div>
@@ -99,36 +87,29 @@
             let currentAction = actionField.value;
             
             if (gameHistory.length === 0 && !currentAction) {
-                currentAction = "Inizia la mia storia. Genera prologo dettagliato.";
+                currentAction = "Genera un prologo dettagliato della mia vita.";
             }
 
             const loading = document.createElement('p');
-            loading.innerText = "Interrogando gli annali del tempo...";
+            loading.innerText = "Interrogando le cronache...";
             loading.className = "text-zinc-600 italic text-[10px] uppercase tracking-widest animate-pulse";
             log.appendChild(loading);
             log.scrollTop = log.scrollHeight;
 
-            // URL CON MODELLO SPECIFICO PER EVITARE 404
-            const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + key;
+            // MODELLO 8B: MASSIMA COMPATIBILITÀ
+            const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=" + key;
 
-            const prompt = `Sei il GM di 'Life finds a Way'. PG: ${document.getElementById('gender').value}, ${document.getElementById('age').value} anni. CONTESTO: Anno ${document.getElementById('year').value}, ${document.getElementById('city').value}, Ceto ${document.getElementById('wealth').value}/10. AZIONE: "${currentAction}". STORIA: ${JSON.stringify(gameHistory.slice(-2))}. REQUISITI: Turno 0: Prologo totale. Turno > 0: Esito azione e evento storico reale. Fine Turno 0: Sezione '---DESCRIZIONE VISIVA IA---' con prompt immagine inglese B&W. Lingua: Italiano. Stile: Crudo e letterario.`;
+            const prompt = `Sei il GM di 'Life finds a Way'. PG: ${document.getElementById('gender').value}, ${document.getElementById('age').value} anni. CONTESTO: Anno ${document.getElementById('year').value}, ${document.getElementById('city').value}, Ceto ${document.getElementById('wealth').value}/10. AZIONE: "${currentAction}". STORIA: ${JSON.stringify(gameHistory.slice(-2))}. Rispondi in italiano narrativo storico. Turno 0: Prologo totale. Fine Turno 0: Aggiungi '---DESCRIZIONE VISIVA IA---' e prompt immagine inglese B&W.`;
 
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{ text: prompt }]
-                        }]
-                    })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
 
                 const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error ? data.error.message : "Errore Sconosciuto");
-                }
+                if (!response.ok) throw new Error(data.error ? data.error.message : "Errore");
 
                 const aiText = data.candidates[0].content.parts[0].text;
                 loading.remove();
@@ -143,9 +124,8 @@
                 log.scrollTop = log.scrollHeight;
             } catch (err) {
                 loading.innerText = "ERRORE: " + err.message;
-                loading.style.color = "#ff4444";
-                loading.classList.remove('animate-pulse');
-                console.error("Dettaglio Errore:", err);
+                loading.style.color = "red";
+                console.error(err);
             }
         }
     </script>
