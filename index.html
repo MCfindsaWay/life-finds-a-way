@@ -4,79 +4,128 @@
     <meta charset="UTF-8">
     <title>Life finds a Way</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400&family=Courier+Prime&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #000; --text: #fff; --border: #333; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; transition: 0.5s; overflow-x: hidden; }
-        .bw-border { border: 1px solid var(--border); }
+        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; transition: 0.5s; }
         .historical-font { font-family: 'Playfair Display', serif; }
-        .modern-font { font-family: 'Inter', sans-serif; }
-        .typewriter { font-family: 'Courier Prime', monospace; }
-        
-        /* Animazione dissolvenza */
-        .fade-out { opacity: 0; pointer-events: none; transition: 0.8s; }
-        .fade-in { opacity: 1; transition: 0.8s; }
-        
-        input[type="range"] { accent-color: #fff; }
+        .bw-border { border: 1px solid #333; }
+        input, textarea { background: transparent; border: 1px solid #222; outline: none; transition: 0.3s; color: white; padding: 10px; }
+        input:focus, textarea:focus { border-color: #fff; }
+        .fade-in { animation: fadeIn 1s forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .hidden { display: none; }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <section id="setupScreen" class="flex flex-col items-center justify-center min-h-screen p-6">
+    <div id="setup" class="flex flex-col items-center justify-center min-h-screen p-6">
         <h1 class="historical-font text-5xl mb-2 italic">Life finds a Way</h1>
-        <p class="text-[10px] tracking-[0.5em] uppercase text-gray-500 mb-12">Historical Life Simulator</p>
-
-        <div class="max-w-md w-full space-y-8">
-            <div>
-                <label class="text-[10px] uppercase text-gray-400">Anno di Partenza: <span id="yearVal" class="text-white">1000</span></label>
-                <input type="range" id="inputYear" min="1" max="2026" value="1000" class="w-full mt-2">
+        <p class="text-[10px] tracking-[0.5em] text-gray-500 mb-12 uppercase">Historical Life Simulator</p>
+        
+        <div class="max-w-md w-full space-y-6">
+            <div class="flex flex-col">
+                <label class="text-[9px] uppercase text-gray-500 mb-1">Incolla qui la tua API Key di Google</label>
+                <input type="text" id="apiKey" placeholder="AIzaSy..." class="text-sm">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col">
+                    <label class="text-[9px] uppercase text-gray-500 mb-1">Anno (1 - 2026)</label>
+                    <input type="number" id="year" value="1000">
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[9px] uppercase text-gray-500 mb-1">Città / Regione</label>
+                    <input type="text" id="city" placeholder="E.g. Roma">
+                </div>
             </div>
 
-            <div>
-                <label class="text-[10px] uppercase text-gray-400">Ceto Sociale (1-10): <span id="wealthVal" class="text-white">5</span></label>
-                <input type="range" id="inputWealth" min="1" max="10" value="5" class="w-full mt-2">
+            <div class="flex flex-col">
+                <label class="text-[9px] uppercase text-gray-500 mb-1">Ricchezza: <span id="wVal">5</span>/10</label>
+                <input type="range" id="wealth" min="1" max="10" value="5" class="w-full">
             </div>
 
-            <div>
-                <input type="text" id="inputLoc" placeholder="Città, Regione o Coordinate..." 
-                       class="w-full bg-transparent border-b border-zinc-800 py-2 outline-none focus:border-white transition text-center">
-            </div>
-
-            <button onclick="launchDestiny()" class="w-full bw-border py-4 hover:bg-white hover:text-black transition uppercase text-xs tracking-widest font-bold">
-                Inizia la stirpe
+            <button onclick="start()" class="w-full bg-white text-black py-4 uppercase text-[10px] tracking-widest font-bold hover:bg-gray-200">
+                Inizia il cammino
             </button>
         </div>
-    </section>
+    </div>
 
-    <section id="gameScreen" class="hidden fixed inset-0 flex flex-col bg-black">
-        <div class="p-4 border-b border-zinc-900 text-center">
-            <h2 class="historical-font text-2xl">Life finds a Way</h2>
-        </div>
-        <div id="gameLog" class="flex-1 overflow-y-auto p-8 space-y-6">
+    <div id="game" class="hidden fixed inset-0 flex flex-col bg-black">
+        <header class="p-4 border-b border-zinc-900 flex justify-between items-center">
+            <span class="historical-font text-xl italic">Life finds a Way</span>
+            <div id="currentInfo" class="text-[10px] text-gray-400 uppercase tracking-widest"></div>
+        </header>
+        <div id="log" class="flex-1 overflow-y-auto p-6 space-y-6 max-w-2xl mx-auto w-full">
             </div>
-        <div class="p-6 border-t border-zinc-900">
-            <textarea id="actionInput" class="w-full bg-black border border-zinc-800 p-4 text-white outline-none" placeholder="Scrivi la tua azione..."></textarea>
-            <div class="flex justify-between mt-4">
-                <button onclick="playTurn(1)" class="text-[10px] border border-zinc-700 px-4 py-2 hover:border-white">+1 MESE</button>
-                <button onclick="playTurn(12)" class="text-[10px] border border-zinc-700 px-4 py-2 hover:border-white font-bold">ESEGUI TURNO</button>
+        <footer class="p-6 border-t border-zinc-900 bg-black">
+            <div class="max-w-2xl mx-auto">
+                <textarea id="action" class="w-full h-24 mb-4 p-4 text-sm bg-zinc-950" placeholder="Cosa farai ora? Scrivi qui la tua azione..."></textarea>
+                <div class="flex gap-4">
+                    <button onclick="turn(1)" class="bw-border px-6 py-2 text-[10px] uppercase hover:border-white tracking-widest">+1 MESE</button>
+                    <button onclick="turn(12)" class="bw-border px-6 py-2 text-[10px] uppercase hover:border-white tracking-widest">+1 ANNO</button>
+                </div>
             </div>
-        </div>
-    </section>
+        </footer>
+    </div>
 
     <script>
-        // Semplice logica di navigazione tra schermate
-        function launchDestiny() {
-            document.getElementById('setupScreen').classList.add('fade-out');
-            setTimeout(() => {
-                document.getElementById('setupScreen').style.display = 'none';
-                document.getElementById('gameScreen').classList.remove('hidden');
-                document.getElementById('gameScreen').classList.add('fade-in');
-            }, 800);
+        let gameHistory = [];
+        document.getElementById('wealth').oninput = (e) => document.getElementById('wVal').innerText = e.target.value;
+
+        function start() {
+            const key = document.getElementById('apiKey').value.trim();
+            if(!key) return alert("Per favore, inserisci la tua API Key di Google AI Studio!");
+            
+            document.getElementById('setup').classList.add('hidden');
+            document.getElementById('game').classList.remove('hidden');
+            
+            const city = document.getElementById('city').value || "un luogo casuale";
+            const year = document.getElementById('year').value;
+            document.getElementById('currentInfo').innerText = `${city} | Anno ${year}`;
+            
+            turn(0); // Genera la nascita
         }
 
-        // Update visuali slider
-        document.getElementById('inputYear').oninput = e => document.getElementById('yearVal').innerText = e.target.value;
-        document.getElementById('inputWealth').oninput = e => document.getElementById('wealthVal').innerText = e.target.value;
+        async function turn(months) {
+            const key = document.getElementById('apiKey').value.trim();
+            const actionInput = document.getElementById('action');
+            const action = actionInput.value || "Sono appena nato, descrivi la mia situazione iniziale.";
+            const log = document.getElementById('log');
+            
+            const loading = document.createElement('p');
+            loading.className = "text-gray-600 italic text-[10px] animate-pulse";
+            loading.innerText = "Le nebbie del tempo si diradano...";
+            log.appendChild(loading);
+            
+            const prompt = `Agisci come Game Master di 'Life finds a Way'. 
+            Contesto: Anno ${document.getElementById('year').value}, Luogo ${document.getElementById('city').value}, Ricchezza ${document.getElementById('wealth').value}/10. 
+            Azione del giocatore: "${action}". Tempo trascorso: ${months} mesi.
+            Storia passata: ${JSON.stringify(gameHistory.slice(-3))}.
+            Scrivi un resoconto narrativo crudo e immersivo in italiano. Includi notizie sulla famiglia e un evento storico reale.`;
+
+            try {
+                const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + key, {
+                    method: "POST", 
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await res.json();
+                const text = data.candidates[0].content.parts[0].text;
+                
+                loading.remove();
+                const turnDiv = document.createElement('div');
+                turnDiv.className = "fade-in border-l border-zinc-800 pl-6 py-4";
+                turnDiv.innerHTML = `<p class="text-sm leading-relaxed text-zinc-300 font-light italic mb-2">Turno: ${months > 0 ? months + " mesi dopo" : "Inizio"}</p><p class="text-base leading-relaxed">${text.replace(/\n/g, '<br>')}</p>`;
+                log.appendChild(turnDiv);
+                
+                actionInput.value = "";
+                gameHistory.push({action, text});
+                log.scrollTop = log.scrollHeight;
+            } catch (e) { 
+                loading.innerText = "Errore: Controlla la tua API Key o la connessione.";
+                console.error(e);
+            }
+        }
     </script>
 </body>
 </html>
