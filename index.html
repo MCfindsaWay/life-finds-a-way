@@ -2,67 +2,82 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Life finds a Way</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&family=Inter:wght@300;400;700&family=Courier+Prime&display=swap" rel="stylesheet">
     <style>
-        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; transition: 0.5s; }
+        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         .historical-font { font-family: 'Playfair Display', serif; }
-        .bw-border { border: 1px solid #333; }
-        input, textarea { background: transparent; border: 1px solid #222; outline: none; transition: 0.3s; color: white; padding: 10px; }
-        input:focus, textarea:focus { border-color: #fff; }
+        .typewriter { font-family: 'Courier Prime', monospace; }
+        input, textarea, select { background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 10px; outline: none; transition: 0.3s; width: 100%; }
+        input:focus, textarea:focus, select:focus { border-color: #fff; }
+        .hidden { display: none; }
         .fade-in { animation: fadeIn 1s forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .hidden { display: none; }
+        .header-img { width: 100%; height: 250px; object-fit: cover; filter: grayscale(1) contrast(1.2) brightness(0.7); border-bottom: 1px solid #333; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #333; }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <div id="setup" class="flex flex-col items-center justify-center min-h-screen p-6">
-        <h1 class="historical-font text-5xl mb-2 italic">Life finds a Way</h1>
-        <p class="text-[10px] tracking-[0.5em] text-gray-500 mb-12 uppercase">Historical Life Simulator</p>
+    <div id="setup" class="max-w-xl mx-auto p-6 space-y-6 pt-10 pb-20">
+        <h1 class="text-5xl italic text-center historical-font mb-4">Life finds a Way</h1>
+        <img id="previewImg" src="https://images.unsplash.com/photo-1461360228754-6e81c478c882?q=80&w=1000&auto=format&fit=crop" class="header-img rounded-lg shadow-2xl mb-8">
         
-        <div class="max-w-md w-full space-y-6">
+        <div class="space-y-6">
             <div class="flex flex-col">
-                <label class="text-[9px] uppercase text-gray-500 mb-1">Incolla qui la tua API Key di Google</label>
-                <input type="text" id="apiKey" placeholder="AIzaSy..." class="text-sm">
+                <label class="text-[9px] uppercase tracking-[0.2em] text-gray-500 mb-1">Google API Key</label>
+                <input type="password" id="apiKey" placeholder="AIzaSy...">
             </div>
             
             <div class="grid grid-cols-2 gap-4">
-                <div class="flex flex-col">
-                    <label class="text-[9px] uppercase text-gray-500 mb-1">Anno (1 - 2026)</label>
-                    <input type="number" id="year" value="1000">
+                <div>
+                    <label class="text-[9px] uppercase tracking-[0.2em] text-gray-500 mb-1">Anno di inizio</label>
+                    <input type="number" id="year" value="1000" onchange="updateImage()">
                 </div>
-                <div class="flex flex-col">
-                    <label class="text-[9px] uppercase text-gray-500 mb-1">Città / Regione</label>
-                    <input type="text" id="city" placeholder="E.g. Roma">
+                <div>
+                    <label class="text-[9px] uppercase tracking-[0.2em] text-gray-500 mb-1">Città / Regione</label>
+                    <input type="text" id="city" placeholder="Roma, Londra...">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[9px] uppercase tracking-[0.2em] text-gray-500 mb-1">Sesso</label>
+                    <select id="gender">
+                        <option value="Maschio">Maschio</option>
+                        <option value="Femmina">Femmina</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[9px] uppercase tracking-[0.2em] text-gray-500 mb-1">Età iniziale</label>
+                    <input type="number" id="age" value="0">
                 </div>
             </div>
 
             <div class="flex flex-col">
-                <label class="text-[9px] uppercase text-gray-500 mb-1">Ricchezza: <span id="wVal">5</span>/10</label>
-                <input type="range" id="wealth" min="1" max="10" value="5" class="w-full">
+                <label class="text-[9px] uppercase tracking-[0.2em] text-gray-500 mb-1">Ceto Sociale: <span id="wVal">5</span>/10</label>
+                <input type="range" id="wealth" min="1" max="10" value="5" oninput="document.getElementById('wVal').innerText=this.value">
             </div>
 
-            <button onclick="start()" class="w-full bg-white text-black py-4 uppercase text-[10px] tracking-widest font-bold hover:bg-gray-200">
-                Inizia il cammino
-            </button>
+            <button onclick="start()" class="w-full bg-white text-black font-bold py-5 uppercase text-[11px] tracking-[0.3em] hover:bg-gray-200 transition-all">Genera Destino</button>
         </div>
     </div>
 
     <div id="game" class="hidden fixed inset-0 flex flex-col bg-black">
-        <header class="p-4 border-b border-zinc-900 flex justify-between items-center">
-            <span class="historical-font text-xl italic">Life finds a Way</span>
-            <div id="currentInfo" class="text-[10px] text-gray-400 uppercase tracking-widest"></div>
+        <header class="border-b border-zinc-900 p-4 flex justify-between items-center bg-black z-10">
+            <h2 class="historical-font italic text-xl">Life finds a Way</h2>
+            <div id="infoLabel" class="text-[9px] text-gray-500 uppercase tracking-widest font-bold"></div>
         </header>
-        <div id="log" class="flex-1 overflow-y-auto p-6 space-y-6 max-w-2xl mx-auto w-full">
-            </div>
+        <div id="log" class="flex-1 overflow-y-auto p-6 space-y-12 max-w-3xl mx-auto w-full pt-10"></div>
         <footer class="p-6 border-t border-zinc-900 bg-black">
-            <div class="max-w-2xl mx-auto">
-                <textarea id="action" class="w-full h-24 mb-4 p-4 text-sm bg-zinc-950" placeholder="Cosa farai ora? Scrivi qui la tua azione..."></textarea>
+            <div class="max-w-3xl mx-auto">
+                <textarea id="action" class="w-full h-24 mb-4 p-4 text-sm bg-zinc-950 border border-zinc-800 text-zinc-300" placeholder="Qual è la tua prossima mossa?"></textarea>
                 <div class="flex gap-4">
-                    <button onclick="turn(1)" class="bw-border px-6 py-2 text-[10px] uppercase hover:border-white tracking-widest">+1 MESE</button>
-                    <button onclick="turn(12)" class="bw-border px-6 py-2 text-[10px] uppercase hover:border-white tracking-widest">+1 ANNO</button>
+                    <button onclick="turn(1)" class="border border-zinc-800 px-8 py-3 text-[10px] uppercase tracking-widest hover:border-white transition-all">Avanza 1 Mese</button>
+                    <button onclick="turn(12)" class="border border-zinc-800 px-8 py-3 text-[10px] uppercase tracking-widest hover:border-white transition-all font-bold">Avanza 1 Anno</button>
                 </div>
             </div>
         </footer>
@@ -70,61 +85,90 @@
 
     <script>
         let gameHistory = [];
-        document.getElementById('wealth').oninput = (e) => document.getElementById('wVal').innerText = e.target.value;
+
+        function updateImage() {
+            const year = document.getElementById('year').value;
+            let q = "ancient";
+            if(year < 500) q = "ancient-rome";
+            else if(year < 1450) q = "medieval-village";
+            else if(year < 1850) q = "renaissance-street";
+            else if(year < 1945) q = "vintage-industrial";
+            else q = "modern-city";
+            document.getElementById('previewImg').src = `https://images.unsplash.com/photo-1?q=80&w=1000&auto=format&fit=crop&sig=${year}&q=${q},bw`;
+        }
 
         function start() {
             const key = document.getElementById('apiKey').value.trim();
-            if(!key) return alert("Per favore, inserisci la tua API Key di Google AI Studio!");
-            
+            if(!key) return alert("Inserisci la API Key per iniziare!");
             document.getElementById('setup').classList.add('hidden');
             document.getElementById('game').classList.remove('hidden');
-            
-            const city = document.getElementById('city').value || "un luogo casuale";
+            const city = document.getElementById('city').value || "un luogo ignoto";
             const year = document.getElementById('year').value;
-            document.getElementById('currentInfo').innerText = `${city} | Anno ${year}`;
-            
-            turn(0); // Genera la nascita
+            const gender = document.getElementById('gender').value;
+            const age = document.getElementById('age').value;
+            document.getElementById('infoLabel').innerText = `${city} | ${year} d.C. | ${gender} | Età: ${age}`;
+            turn(0);
         }
 
         async function turn(months) {
             const key = document.getElementById('apiKey').value.trim();
             const actionInput = document.getElementById('action');
-            const action = actionInput.value || "Sono appena nato, descrivi la mia situazione iniziale.";
+            let action = actionInput.value;
             const log = document.getElementById('log');
-            
+            const gender = document.getElementById('gender').value;
+            const age = document.getElementById('age').value;
+            const year = document.getElementById('year').value;
+            const city = document.getElementById('city').value || "ignoto";
+            const wealth = document.getElementById('wealth').value;
+
+            if (gameHistory.length === 0 && !action) action = "Inizia la mia storia.";
+
             const loading = document.createElement('p');
-            loading.className = "text-gray-600 italic text-[10px] animate-pulse";
-            loading.innerText = "Le nebbie del tempo si diradano...";
+            loading.className = "text-gray-600 italic text-[10px] animate-pulse uppercase tracking-widest";
+            loading.innerText = "Il destino si sta compiendo...";
             log.appendChild(loading);
             
-            const prompt = `Agisci come Game Master di 'Life finds a Way'. 
-            Contesto: Anno ${document.getElementById('year').value}, Luogo ${document.getElementById('city').value}, Ricchezza ${document.getElementById('wealth').value}/10. 
-            Azione del giocatore: "${action}". Tempo trascorso: ${months} mesi.
-            Storia passata: ${JSON.stringify(gameHistory.slice(-3))}.
-            Scrivi un resoconto narrativo crudo e immersivo in italiano. Includi notizie sulla famiglia e un evento storico reale.`;
+            const prompt = `GM di 'Life finds a Way'. 
+            PG: ${gender}, ${age} anni. CONTESTO: Anno ${year}, Luogo ${city}, Ceto ${wealth}/10. 
+            AZIONE: "${action}". MESI: ${months}. HISTORY: ${JSON.stringify(gameHistory.slice(-2))}.
+            REQUISITI:
+            - Turno 0: Prologo totale. Famiglia, situazione regno, aspetto.
+            - Fine Turno 0: Sezione "---DESCRIZIONE VISIVA IA---" con prompt in INGLESE per immagine B&W del PG nel contesto.
+            - Turno > 0: Esito azione, famiglia, evento storico reale.
+            - Stile: Letterario, crudo, immersivo. Italiano.`;
 
             try {
-                const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + key, {
-                    method: "POST", 
-                    headers: {"Content-Type": "application/json"},
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+                    method: "POST", headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
                 const data = await res.json();
-                const text = data.candidates[0].content.parts[0].text;
-                
+                let text = data.candidates[0].content.parts[0].text;
                 loading.remove();
-                const turnDiv = document.createElement('div');
-                turnDiv.className = "fade-in border-l border-zinc-800 pl-6 py-4";
-                turnDiv.innerHTML = `<p class="text-sm leading-relaxed text-zinc-300 font-light italic mb-2">Turno: ${months > 0 ? months + " mesi dopo" : "Inizio"}</p><p class="text-base leading-relaxed">${text.replace(/\n/g, '<br>')}</p>`;
-                log.appendChild(turnDiv);
                 
+                const turnDiv = document.createElement('div');
+                turnDiv.className = "fade-in border-l border-zinc-800 pl-6 py-2";
+                
+                if (gameHistory.length === 0) {
+                    const parts = text.split("---DESCRIZIONE VISIVA IA---");
+                    turnDiv.innerHTML = `
+                        <p class="text-[9px] text-zinc-600 mb-4 uppercase tracking-[0.3em]">Genesi</p>
+                        <div class="text-base leading-relaxed text-zinc-300 mb-8">${parts[0].replace(/\n/g, '<br>')}</div>
+                        <div class="bg-zinc-950 border border-zinc-900 p-6 rounded">
+                            <p class="text-[10px] text-white uppercase tracking-widest mb-4 font-bold border-b border-zinc-800 pb-2">Ritratto del Personaggio (Prompt per Immagine)</p>
+                            <p class="text-xs italic text-zinc-500 typewriter leading-relaxed">${parts[1] || ""}</p>
+                        </div>`;
+                } else {
+                    turnDiv.innerHTML = `
+                        <p class="text-[9px] text-zinc-600 mb-4 uppercase tracking-[0.3em]">+ ${months} mesi</p>
+                        <div class="text-base leading-relaxed text-zinc-300">${text.replace(/\n/g, '<br>')}</div>`;
+                }
+                
+                log.appendChild(turnDiv);
                 actionInput.value = "";
                 gameHistory.push({action, text});
                 log.scrollTop = log.scrollHeight;
-            } catch (e) { 
-                loading.innerText = "Errore: Controlla la tua API Key o la connessione.";
-                console.error(e);
-            }
+            } catch (e) { loading.innerText = "Errore API. Controlla la chiave."; }
         }
     </script>
 </body>
