@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8"><title>Test Life finds a Way</title>
+    <meta charset="UTF-8"><title>Life finds a Way - Last Stand</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>body{background:#000;color:#fff;font-family:sans-serif;}</style>
 </head>
@@ -9,7 +9,8 @@
     <div id="setup" class="max-w-md w-full space-y-4">
         <h1 class="text-3xl italic text-center mb-8 font-serif">Life finds a Way</h1>
         <input type="password" id="apiKey" class="w-full p-4 bg-zinc-900 border border-zinc-800 rounded text-white" placeholder="Incolla la nuova chiave AIza...">
-        <button onclick="testDestiny()" class="w-full bg-white text-black font-bold py-4 uppercase tracking-widest hover:bg-zinc-200">Genera Destino</button>
+        <button onclick="testDestiny()" class="w-full bg-white text-black font-bold py-4 uppercase tracking-widest">Genera Destino</button>
+        <p id="debug" class="text-[10px] text-zinc-600 text-center font-mono"></p>
     </div>
     <div id="game" class="hidden max-w-2xl w-full">
         <div id="output" class="text-lg leading-relaxed text-zinc-300 border-l-2 border-white pl-6"></div>
@@ -18,30 +19,37 @@
     <script>
         async function testDestiny() {
             const key = document.getElementById('apiKey').value.trim();
+            const debug = document.getElementById('debug');
             if(!key) return alert("Inserisci la chiave!");
             
             const btn = document.querySelector('button');
-            btn.innerText = "SCRIVENDO...";
+            btn.innerText = "TENTATIVO IN CORSO...";
             btn.disabled = true;
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+            // TENTIAMO IL MODELLO PIÙ COMPATIBILE IN ASSOLUTO
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${key}`;
             
             try {
                 const res = await fetch(url, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({contents: [{parts: [{text: "Sei un narratore. Genera un breve prologo (5 righe) per una persona nata nel 1000 d.C. a Roma, famiglia povera. Lingua: Italiano."}]}]})
+                    body: JSON.stringify({contents: [{parts: [{text: "Scrivi una riga: Ciao mondo storico."}]}]})
                 });
                 
                 const data = await res.json();
-                if(!res.ok) throw new Error(data.error.message);
+                
+                if(!res.ok) {
+                    debug.innerText = "Errore: " + (data.error ? data.error.message : "Sconosciuto");
+                    throw new Error(data.error ? data.error.message : "Errore");
+                }
                 
                 document.getElementById('setup').classList.add('hidden');
                 document.getElementById('game').classList.remove('hidden');
-                document.getElementById('output').innerHTML = data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
+                document.getElementById('output').innerHTML = data.candidates[0].content.parts[0].text;
+                
             } catch(e) {
-                alert("ERRORE: " + e.message);
-                btn.innerText = "GENERA DESTINO";
+                console.error(e);
+                btn.innerText = "RIPROVA";
                 btn.disabled = false;
             }
         }
