@@ -7,202 +7,239 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #f4f1ea; --text: #1a1a1a; --accent: #8b4513; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
+        :root { --bg: #f4f1ea; --text: #1a1a1a; --accent: #5d2e0a; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; transition: 0.5s; }
         .serif { font-family: 'Crimson Pro', serif; }
-        input, textarea, select { background: #fff; border: 1px solid #d1ccc0; color: var(--text); padding: 12px; width: 100%; border-radius: 4px; }
-        #map { height: 300px; width: 100%; border: 2px solid #d1ccc0; filter: sepia(0.5) contrast(1.1); }
+        .card { background: #fff; border: 1px solid #d1ccc0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-radius: 8px; }
+        .btn-main { background: var(--accent); color: #fff; font-weight: bold; padding: 14px; text-transform: uppercase; font-size: 10px; letter-spacing: 2px; transition: 0.3s; border-radius: 4px; }
+        .btn-main:hover { opacity: 0.9; transform: translateY(-1px); }
         .hidden { display: none; }
-        .btn-main { background: var(--accent); color: #fff; font-weight: bold; padding: 14px; text-transform: uppercase; font-size: 11px; letter-spacing: 2px; transition: 0.3s; }
-        .btn-main:hover { opacity: 0.9; }
-        .card { background: #fff; border: 1px solid #d1ccc0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .event-img { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 1rem; border: 1px solid #ddd; }
+        #map { height: 400px; width: 100%; border-radius: 4px; border: 2px solid var(--accent); }
+        input[type=range] { -webkit-appearance: none; background: #d1ccc0; height: 4px; border-radius: 5px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; background: var(--accent); border-radius: 50%; cursor: pointer; }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8">
+<body class="min-h-screen p-4 flex flex-col items-center">
 
-    <div id="setup" class="max-w-3xl mx-auto space-y-8 fade-in">
+    <div id="step1" class="max-w-xl w-full space-y-8 py-10 fade-in">
         <header class="text-center">
             <h1 class="text-6xl serif italic text-[#5d2e0a]">Life finds a Way</h1>
-            <p class="text-xs tracking-[0.3em] text-stone-500 uppercase mt-4">Simulatore di Esistenza Storica</p>
+            <p class="text-[10px] tracking-[0.4em] text-stone-500 uppercase mt-4">Origini dell'Anima</p>
         </header>
 
         <div class="card p-8 space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-4">
-                    <input type="password" id="apiKey" placeholder="Inserisci API Key Gemini 3">
-                    
-                    <div>
-                        <label class="text-[10px] font-bold uppercase text-stone-500 mb-1 block">📅 Anno di Simulazione</label>
-                        <input type="number" id="year" value="1000">
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="text-[10px] font-bold uppercase text-stone-500 mb-1 block">👤 Sesso</label>
-                            <select id="gender"><option>Maschio</option><option>Femmina</option></select>
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold uppercase text-stone-500 mb-1 block">⏳ Età di Inizio</label>
-                            <input type="number" id="age" min="0" max="100" value="0">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="text-[10px] font-bold uppercase text-stone-500 mb-1 block">💰 Ricchezza Famiglia (1-10)</label>
-                        <input type="range" id="wealth" min="1" max="10" value="5" class="w-full">
-                    </div>
-
-                    <input type="text" id="textSearch" placeholder="Cerca un luogo specifico..." class="text-sm">
+            <input type="password" id="apiKey" placeholder="Google API Key Gemini 3" class="w-full border p-3 rounded">
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] font-bold uppercase text-stone-500 block mb-1">📅 Anno di Simulazione</label>
+                    <input type="number" id="year" value="1000" class="w-full border p-3 rounded">
                 </div>
-
-                <div class="space-y-2">
-                    <label class="text-[10px] font-bold uppercase text-stone-500 block">🗺️ Area di Nascita (Clicca sulla mappa)</label>
-                    <div id="map"></div>
+                <div>
+                    <label class="text-[10px] font-bold uppercase text-stone-500 block mb-1">👤 Sesso</label>
+                    <select id="gender" class="w-full border p-3 rounded"><option>Maschio</option><option>Femmina</option></select>
                 </div>
             </div>
-            <button onclick="preSpawn()" class="w-full btn-main">Genera Identità</button>
+
+            <div>
+                <label class="text-[10px] font-bold uppercase text-stone-500 block mb-1">⏳ Età di Inizio</label>
+                <input type="number" id="age" value="0" min="0" max="100" class="w-full border p-3 rounded">
+            </div>
+
+            <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                    <label class="text-[10px] font-bold uppercase text-stone-500">💰 Ricchezza Famiglia</label>
+                    <span id="wealthVal" class="serif text-xl font-bold text-[#5d2e0a]">5</span>
+                </div>
+                <input type="range" id="wealth" min="1" max="10" value="5" class="w-full" oninput="document.getElementById('wealthVal').innerText = this.value">
+            </div>
+
+            <button onclick="goToStep2()" class="w-full btn-main">Prosegui verso il Luogo</button>
         </div>
     </div>
 
-    <div id="confirm" class="hidden fixed inset-0 z-50 bg-stone-100/90 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="card max-w-md w-full p-8 text-center space-y-6">
-            <h2 class="serif italic text-3xl">Visto del Destino</h2>
-            <div id="miniInfo" class="serif text-xl space-y-2">
-                </div>
-            <div id="miniMap" class="h-40 w-full rounded border border-gray-300"></div>
-            <div class="flex gap-4">
-                <button onclick="acceptDestiny()" class="flex-1 btn-main">Accetta</button>
-                <button onclick="toggleScreen('confirm', 'setup')" class="flex-1 border border-stone-300 uppercase text-[10px]">Rinnega</button>
+    <div id="step2" class="hidden max-w-4xl w-full space-y-6 py-10 fade-in">
+        <h2 class="serif text-4xl italic text-center text-[#5d2e0a]">Dove verrai al mondo?</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="card p-6 flex flex-col justify-center">
+                <label class="text-[10px] font-bold uppercase text-stone-500 mb-4 block">Opzione A: Cerca Luogo Specifico</label>
+                <input type="text" id="locSearch" placeholder="Città, Provincia o Nazione..." class="border p-3 rounded mb-4">
+                <button onclick="searchManual()" class="btn-main">Trova sulla Mappa</button>
+            </div>
+            <div class="card p-6">
+                <label class="text-[10px] font-bold uppercase text-stone-500 mb-4 block">Opzione B: Traccia Area sulla Mappa</label>
+                <div id="map"></div>
+            </div>
+        </div>
+        
+        <button onclick="preSpawn()" class="w-full btn-main py-6">Determina il Destino</button>
+    </div>
+
+    <div id="confirm" class="hidden fixed inset-0 z-50 bg-stone-100/95 flex items-center justify-center p-4">
+        <div class="card max-w-md w-full p-8 text-center space-y-6 border-2 border-[#5d2e0a]">
+            <h2 class="serif italic text-3xl">Visto del Passaporto 📜</h2>
+            <div id="miniResoconto" class="serif text-xl space-y-2 py-4 border-y border-stone-200"></div>
+            <div class="flex gap-4 pt-4">
+                <button onclick="acceptDestiny()" class="flex-1 btn-main">Incaricati 🖋️</button>
+                <button onclick="toggleScreen('confirm', 'step2')" class="flex-1 border border-stone-300 uppercase text-[10px]">Rinnega</button>
             </div>
         </div>
     </div>
 
-    <div id="game" class="hidden max-w-3xl mx-auto flex flex-col h-[90vh]">
+    <div id="game" class="hidden max-w-3xl w-full flex flex-col h-[90vh]">
         <header class="flex justify-between items-center border-b border-stone-300 pb-4 mb-6">
             <h2 class="serif italic text-2xl text-[#5d2e0a]">Cronache di Vita</h2>
             <div id="gameInfo" class="text-[10px] font-bold text-stone-500 uppercase tracking-widest text-right"></div>
         </header>
-
-        <div id="log" class="flex-1 overflow-y-auto space-y-12 pr-4 custom-scrollbar"></div>
-
+        <div id="log" class="flex-1 overflow-y-auto space-y-8 pr-4"></div>
         <footer class="mt-6 border-t border-stone-300 pt-6">
-            <textarea id="action" class="w-full h-24 mb-4 border-stone-300" placeholder="Cosa accade ora?"></textarea>
+            <textarea id="action" class="w-full h-24 mb-4 border-stone-300 p-4 rounded bg-white shadow-inner" placeholder="Qual è il tuo prossimo passo?"></textarea>
             <div class="flex gap-2">
-                <button onclick="playTurn(1)" class="flex-1 border border-stone-300 text-[10px] uppercase py-3">1 Mese</button>
-                <button onclick="playTurn(6)" class="flex-1 border border-stone-300 text-[10px] uppercase py-3">6 Mesi</button>
+                <button onclick="playTurn(1)" class="flex-1 border border-stone-300 text-[9px] uppercase font-bold py-3 hover:bg-stone-50">1 Mese</button>
+                <button onclick="playTurn(6)" class="flex-1 border border-stone-300 text-[9px] uppercase font-bold py-3 hover:bg-stone-50">6 Mesi</button>
                 <button onclick="playTurn(12)" class="flex-1 btn-main">1 Anno</button>
             </div>
         </footer>
     </div>
 
     <script>
-        let map, miniMap, marker, miniMarker;
-        let pData = { lat: 41.9, lng: 12.5, place: "", state: "", name: "" };
+        let map, drawnItems, marker, spawnCoords = null;
+        let pData = { name: "", place: "", state: "", year: 0, age: 0, wealth: 5, gender: "" };
 
-        window.onload = () => {
+        function toggleScreen(h, s) { document.getElementById(h).classList.add('hidden'); document.getElementById(s).classList.remove('hidden'); }
+
+        function goToStep2() {
+            if(!document.getElementById('apiKey').value) return alert("Inserisci l'API Key!");
+            toggleScreen('step1', 'step2');
+            initMap();
+        }
+
+        function initMap() {
+            if (map) return;
             map = L.map('map').setView([41.9, 12.5], 4);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
-            
-            map.on('click', e => {
-                if(marker) map.removeLayer(marker);
-                pData.lat = e.latlng.lat; pData.lng = e.latlng.lng;
-                marker = L.marker([pData.lat, pData.lng]).addTo(map);
-            });
-        };
+            // Mappa Darker per distinguere confini
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
 
-        function toggleScreen(h, s) { 
-            document.getElementById(h).classList.add('hidden'); 
-            document.getElementById(s).classList.remove('hidden'); 
+            drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
+
+            const drawControl = new L.Control.Draw({
+                draw: { polyline: false, circle: false, marker: true, circlemarker: false, polygon: true, rectangle: true },
+                edit: { featureGroup: drawnItems }
+            });
+            map.addControl(drawControl);
+
+            map.on(L.Draw.Event.CREATED, function (e) {
+                drawnItems.clearLayers();
+                const layer = e.layer;
+                drawnItems.addLayer(layer);
+                if (layer instanceof L.Marker) {
+                    spawnCoords = layer.getLatLng();
+                } else {
+                    spawnCoords = layer.getBounds().getCenter();
+                }
+            });
+        }
+
+        async function searchManual() {
+            const query = document.getElementById('locSearch').value;
+            if(!query) return;
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`);
+            const data = await res.json();
+            if(data.length > 0) {
+                const loc = data[0];
+                map.setView([loc.lat, loc.lon], 10);
+                spawnCoords = { lat: loc.lat, lng: loc.lon };
+                drawnItems.clearLayers();
+                L.marker([loc.lat, loc.lon]).addTo(drawnItems);
+            }
         }
 
         async function preSpawn() {
+            if(!spawnCoords) return alert("Seleziona un punto o un'area sulla mappa!");
             const key = document.getElementById('apiKey').value;
-            if(!key || !marker) return alert("Inserisci API Key e seleziona un punto sulla mappa!");
-
-            // Reverse Geocoding
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pData.lat}&lon=${pData.lng}&format=json&accept-language=it`);
-            const data = await res.json();
-            pData.place = data.address.city || data.address.town || "Villaggio Ignoto";
-            pData.state = data.address.country || "Regno Ignoto";
             
-            // Generazione Nome Casuale tramite AI per il "Passaporto"
+            // Reverse Geocoding
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${spawnCoords.lat}&lon=${spawnCoords.lng}&format=json&accept-language=it`);
+            const data = await res.json();
+            pData.place = data.address.city || data.address.town || data.address.village || data.address.state || "Villaggio Remoto";
+            pData.state = data.address.country || "Regno Sconosciuto";
+            pData.year = document.getElementById('year').value;
+            pData.age = document.getElementById('age').value;
+            pData.gender = document.getElementById('gender').value;
+            pData.wealth = document.getElementById('wealth').value;
+
+            // Chiediamo all'IA un nome e un cognome
+            const prompt = `Genera solo un Nome e Cognome storicamente accurati per un ${pData.gender} nato a ${pData.place} nel ${pData.year}.`;
             const nameRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${key}`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({contents:[{parts:[{text: `Genera un nome e cognome storicamente accurati per un ${document.getElementById('gender').value} nato a ${pData.place} nel ${document.getElementById('year').value}. Rispondi SOLO con Nome e Cognome.`}]}]})
+                body: JSON.stringify({contents: [{parts: [{text: prompt}]}]})
             });
             const nameData = await nameRes.json();
             pData.name = nameData.candidates[0].content.parts[0].text;
 
-            document.getElementById('miniInfo').innerHTML = `
-                <p class="font-bold text-2xl">${pData.name} 📜</p>
-                <p class="text-stone-600 text-sm">Nato a ${pData.place}, ${pData.state} 📍</p>
-                <p class="text-stone-600 text-sm">Età: ${document.getElementById('age').value} anni | Anno: ${document.getElementById('year').value} ⏳</p>
+            document.getElementById('miniResoconto').innerHTML = `
+                <p class="font-bold text-2xl">${pData.name}</p>
+                <p class="text-stone-600 text-sm italic">${pData.place}, ${pData.state}</p>
+                <p class="text-[10px] uppercase tracking-widest mt-4">Nascita: ${pData.year} | Età: ${pData.age}</p>
             `;
-            
-            toggleScreen('setup', 'confirm');
-            
-            if(!miniMap) {
-                miniMap = L.map('miniMap', {zoomControl: false, attributionControl: false}).setView([pData.lat, pData.lng], 5);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(miniMap);
-            }
-            miniMap.setView([pData.lat, pData.lng], 5);
-            if(miniMarker) miniMap.removeLayer(miniMarker);
-            miniMarker = L.circleMarker([pData.lat, pData.lng], {color: 'red', radius: 8, fillOpacity: 1}).addTo(miniMap);
+            toggleScreen('step2', 'confirm');
         }
 
         async function acceptDestiny() {
             toggleScreen('confirm', 'game');
-            // Qui generiamo il resoconto completo
             await playTurn(0, true);
         }
 
-        async function playTurn(months, isFirst = false) {
+        async function playTurn(m, isFirst = false) {
             const key = document.getElementById('apiKey').value;
             const log = document.getElementById('log');
-            const action = isFirst ? "Genera un resoconto completo: Genitori (lavoro/salute), Amici, Possedimenti, Ruolo Sociale, Nemici e Problemi locali." : document.getElementById('action').value;
+            const action = isFirst ? `RESOCONTO INIZIALE COMPLETO. Descrivi ambiente, Genitori (lavoro/salute), Amici, Possedimenti, Ruolo Sociale, Nemici e Problemi locali.` : document.getElementById('action').value;
             
             const loading = document.createElement('p');
-            loading.className = "serif italic animate-pulse";
-            loading.innerText = "Le cronache si aggiornano...";
+            loading.className = "serif italic animate-pulse py-4";
+            loading.innerText = "Sfogliando le pergamene...";
             log.appendChild(loading);
 
-            const prompt = `Sei un narratore storico. Protagonista: ${pData.name}, ${pData.place}, ${pData.state}, Anno ${document.getElementById('year').value}. 
-                Azione: ${action}. Usa molte emoji 🏰⚔️💰. Rispondi in italiano narrativo professionale. 
-                Fornisci anche 3 keyword in inglese separate da virgola per un'immagine rappresentativa alla fine (es: [IMG: medieval forest, knight, rain]).`;
+            const prompt = `Sei un Master di simulazione storica realistica. Protagonista: ${pData.name}, ${pData.gender}, a ${pData.place}, ${pData.state}, Anno ${parseInt(pData.year) + parseInt(pData.age)}. Ricchezza Famiglia: ${pData.wealth}/10. 
+                Azione attuale: ${action}.
+                REGOLE: Usa emoji per ogni tratto 🏰💰⚔️, stile narrativo alto, includi un'immagine descrittiva alla fine [IMG: keywords]. Rispondi in italiano.`;
 
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${key}`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({contents: [{parts: [{text: prompt}]}]})
+                    body: JSON.stringify({contents:[{parts:[{text: prompt}]}]})
                 });
                 const data = await res.json();
                 loading.remove();
 
-                let aiText = data.candidates[0].content.parts[0].text;
+                let text = data.candidates[0].content.parts[0].text;
                 
-                // Estrazione Keywords per immagine
-                const imgMatch = aiText.match(/\[IMG: (.*?)\]/);
-                let imgHtml = "";
+                // Immagine dinamica
+                const imgMatch = text.match(/\[IMG: (.*?)\]/);
+                let imgTag = "";
                 if(imgMatch) {
-                    const keywords = encodeURIComponent(imgMatch[1]);
-                    imgHtml = `<img src="https://source.unsplash.com/800x400/?${keywords}" class="event-img" alt="Scena storica">`;
-                    aiText = aiText.replace(imgMatch[0], "");
+                    imgTag = `<img src="https://source.unsplash.com/800x400/?${encodeURIComponent(imgMatch[1])}" class="w-full h-48 object-cover rounded mb-4 border">`;
+                    text = text.replace(imgMatch[0], "");
                 }
 
-                const entry = document.createElement('div');
-                entry.className = "serif space-y-4 border-b border-stone-200 pb-8";
-                entry.innerHTML = `${imgHtml}<div class="text-lg leading-relaxed">${aiText.replace(/\n/g, '<br>')}</div>`;
-                log.appendChild(entry);
-                log.scrollTop = log.scrollHeight;
+                const div = document.createElement('div');
+                div.className = "serif p-6 bg-white border border-stone-200 rounded shadow-sm fade-in";
+                div.innerHTML = `${imgTag}<div class="text-lg leading-relaxed">${text.replace(/\n/g, '<br>')}</div>`;
+                log.appendChild(div);
                 
-                document.getElementById('gameInfo').innerText = `${pData.name} | ${pData.place} | Età: ${document.getElementById('age').value}`;
+                if(!isFirst) pData.age = parseInt(pData.age) + (m/12);
+                document.getElementById('gameInfo').innerText = `${pData.name} | Anno ${Math.floor(parseInt(pData.year) + pData.age)} | Età: ${Math.floor(pData.age)}`;
                 document.getElementById('action').value = "";
-            } catch (e) { alert("Errore: " + e.message); }
+                log.scrollTop = log.scrollHeight;
+            } catch(e) { alert("Errore di connessione!"); }
         }
     </script>
 </body>
