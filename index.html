@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Life finds a Way</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400&family=Courier+Prime&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #000; --text: #fff; --border: #333; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; transition: 0.5s; overflow-x: hidden; }
+        .bw-border { border: 1px solid var(--border); }
+        .historical-font { font-family: 'Playfair Display', serif; }
+        .modern-font { font-family: 'Inter', sans-serif; }
+        .typewriter { font-family: 'Courier Prime', monospace; }
+        
+        /* Animazione dissolvenza */
+        .fade-out { opacity: 0; pointer-events: none; transition: 0.8s; }
+        .fade-in { opacity: 1; transition: 0.8s; }
+        
+        input[type="range"] { accent-color: #fff; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <section id="setupScreen" class="flex flex-col items-center justify-center min-h-screen p-6">
+        <h1 class="historical-font text-5xl mb-2 italic">Life finds a Way</h1>
+        <p class="text-[10px] tracking-[0.5em] uppercase text-gray-500 mb-12">Historical Life Simulator</p>
+
+        <div class="max-w-md w-full space-y-8">
+            <div>
+                <label class="text-[10px] uppercase text-gray-400">Anno di Partenza: <span id="yearVal" class="text-white">1000</span></label>
+                <input type="range" id="inputYear" min="1" max="2026" value="1000" class="w-full mt-2">
+            </div>
+
+            <div>
+                <label class="text-[10px] uppercase text-gray-400">Ceto Sociale (1-10): <span id="wealthVal" class="text-white">5</span></label>
+                <input type="range" id="inputWealth" min="1" max="10" value="5" class="w-full mt-2">
+            </div>
+
+            <div>
+                <input type="text" id="inputLoc" placeholder="Città, Regione o Coordinate..." 
+                       class="w-full bg-transparent border-b border-zinc-800 py-2 outline-none focus:border-white transition text-center">
+            </div>
+
+            <button onclick="launchDestiny()" class="w-full bw-border py-4 hover:bg-white hover:text-black transition uppercase text-xs tracking-widest font-bold">
+                Inizia la stirpe
+            </button>
+        </div>
+    </section>
+
+    <section id="gameScreen" class="hidden fixed inset-0 flex flex-col bg-black">
+        <div class="p-4 border-b border-zinc-900 text-center">
+            <h2 class="historical-font text-2xl">Life finds a Way</h2>
+        </div>
+        <div id="gameLog" class="flex-1 overflow-y-auto p-8 space-y-6">
+            </div>
+        <div class="p-6 border-t border-zinc-900">
+            <textarea id="actionInput" class="w-full bg-black border border-zinc-800 p-4 text-white outline-none" placeholder="Scrivi la tua azione..."></textarea>
+            <div class="flex justify-between mt-4">
+                <button onclick="playTurn(1)" class="text-[10px] border border-zinc-700 px-4 py-2 hover:border-white">+1 MESE</button>
+                <button onclick="playTurn(12)" class="text-[10px] border border-zinc-700 px-4 py-2 hover:border-white font-bold">ESEGUI TURNO</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Semplice logica di navigazione tra schermate
+        function launchDestiny() {
+            document.getElementById('setupScreen').classList.add('fade-out');
+            setTimeout(() => {
+                document.getElementById('setupScreen').style.display = 'none';
+                document.getElementById('gameScreen').classList.remove('hidden');
+                document.getElementById('gameScreen').classList.add('fade-in');
+            }, 800);
+        }
+
+        // Update visuali slider
+        document.getElementById('inputYear').oninput = e => document.getElementById('yearVal').innerText = e.target.value;
+        document.getElementById('inputWealth').oninput = e => document.getElementById('wealthVal').innerText = e.target.value;
+    </script>
+</body>
+</html>
