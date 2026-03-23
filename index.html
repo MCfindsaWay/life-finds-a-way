@@ -1,81 +1,194 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8"><title>Life finds a Way</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life finds a Way</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>body{background:#000;color:#fff;font-family:sans-serif;}input,textarea{background:#111;border:1px solid #333;color:#fff;padding:12px;width:100%;}</style>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; }
+        .historical-font { font-family: 'Playfair Display', serif; }
+        input, textarea, select { background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 12px; width: 100%; outline: none; transition: border 0.3s; }
+        input:focus { border-color: #555; }
+        .hidden { display: none; }
+        .fade-in { animation: fadeIn 0.8s forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        input[type=range] { -webkit-appearance: none; background: #222; height: 2px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; background: #fff; border-radius: 50%; cursor: pointer; }
+    </style>
 </head>
-<body class="p-10 flex flex-col items-center">
-    <div id="setup" class="max-w-md w-full space-y-6">
-        <h1 class="text-3xl italic text-center font-serif text-white">Life finds a Way</h1>
-        <p class="text-[10px] text-zinc-500 text-center uppercase tracking-widest">Utilizzando Gemini 3 Flash Preview</p>
-        <input type="password" id="apiKey" class="w-full" placeholder="Incolla la tua chiave AIza...">
-        <button onclick="startGame()" class="w-full bg-white text-black font-bold py-4 uppercase hover:bg-zinc-200 transition-colors">Entra nel Destino</button>
-    </div>
+<body class="min-h-screen">
 
-    <div id="game" class="hidden max-w-2xl w-full">
-        <div id="log" class="space-y-6 text-lg leading-relaxed text-zinc-300 mb-20"></div>
-        <div class="fixed bottom-0 left-0 w-full p-6 bg-black border-t border-zinc-900">
-            <div class="max-w-2xl mx-auto flex gap-2">
-                <input type="text" id="action" class="flex-1" placeholder="Qual è la tua prossima mossa?">
-                <button onclick="playTurn()" class="bg-white text-black px-8 font-bold uppercase text-xs">Invia</button>
+    <div id="setup" class="max-w-xl mx-auto space-y-8 pt-16 px-6 pb-20">
+        <div class="text-center space-y-2">
+            <h1 class="text-5xl historical-font italic">Life finds a Way</h1>
+            <p class="text-[10px] tracking-[0.4em] text-zinc-500 uppercase font-bold">Simulatore di Vita Storica</p>
+        </div>
+        
+        <div class="space-y-6 pt-10 border-t border-zinc-900">
+            <div>
+                <label class="text-[9px] uppercase tracking-widest text-zinc-500 mb-2 block">Google API Key (Gemini 3)</label>
+                <input type="password" id="apiKey" placeholder="Incolla la tua chiave AIza...">
             </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[9px] uppercase tracking-widest text-zinc-500 mb-2 block">Anno di Nascita</label>
+                    <input type="number" id="year" value="1000">
+                </div>
+                <div>
+                    <label class="text-[9px] uppercase tracking-widest text-zinc-500 mb-2 block">Città / Luogo</label>
+                    <input type="text" id="city" placeholder="Esempio: Roma, Kyoto...">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[9px] uppercase tracking-widest text-zinc-500 mb-2 block">Sesso</label>
+                    <select id="gender">
+                        <option value="Maschio">Maschio</option>
+                        <option value="Femmina">Femmina</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[9px] uppercase tracking-widest text-zinc-500 mb-2 block">Età Iniziale</label>
+                    <input type="number" id="age" value="0">
+                </div>
+            </div>
+
+            <div class="text-center py-4 bg-zinc-950 border border-zinc-900 rounded p-4">
+                <label class="text-[10px] text-zinc-500 uppercase tracking-widest">Ceto Sociale / Ricchezza: <span id="wealthNum" class="text-white font-bold text-lg">5</span></label>
+                <input type="range" id="wealth" min="1" max="10" value="5" oninput="document.getElementById('wealthNum').innerText = this.value" class="mt-4 w-full">
+                <div class="flex justify-between text-[8px] text-zinc-600 mt-1 uppercase"><span>Povertà</span><span>Nobiltà</span></div>
+            </div>
+
+            <button onclick="startGame()" class="w-full bg-white text-black font-bold py-5 uppercase text-xs tracking-[0.2em] hover:bg-zinc-200 transition-all active:scale-95">Inizia la stirpe</button>
         </div>
     </div>
 
+    <div id="game" class="hidden fixed inset-0 flex flex-col bg-black overflow-hidden">
+        <header class="p-4 border-b border-zinc-900 flex justify-between items-center bg-black/80 backdrop-blur-md z-10">
+            <span class="historical-font italic text-xl">Life finds a Way</span>
+            <span id="info" class="text-[10px] text-zinc-500 uppercase tracking-widest font-bold"></span>
+        </header>
+
+        <div id="log" class="flex-1 overflow-y-auto p-6 space-y-12 max-w-2xl mx-auto w-full pb-32">
+            </div>
+
+        <footer class="p-6 border-t border-zinc-900 bg-black">
+            <div class="max-w-2xl mx-auto relative">
+                <textarea id="action" class="w-full h-28 p-4 text-sm bg-zinc-950 border border-zinc-900 text-zinc-300 rounded-lg resize-none focus:border-zinc-700" placeholder="Qual è la tua prossima mossa nel corso della storia?"></textarea>
+                <div class="flex justify-between items-center mt-3">
+                    <p class="text-[9px] text-zinc-600 uppercase tracking-tighter">Digita un'azione o avanza nel tempo</p>
+                    <button onclick="playTurn()" class="bg-white text-black px-8 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-all">Avanza</button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
     <script>
-        async function startGame() {
+        let gameHistory = [];
+        let currentAge = 0;
+
+        function startGame() {
             const key = document.getElementById('apiKey').value.trim();
-            if(!key) return alert("Manca la chiave!");
-            document.getElementById('setup').classList.add('hidden');
+            if (!key) { alert("Inserisci la tua API Key!"); return; }
+            
+            currentAge = parseInt(document.getElementById('age').value);
+            document.getElementById('setup').style.display = 'none';
             document.getElementById('game').classList.remove('hidden');
-            playTurn("Inizia la mia storia. Sono nato nel 1000 d.C. a Roma in una famiglia povera. Descrivi brevemente il prologo in italiano.");
+            
+            const city = document.getElementById('city').value || "Luogo ignoto";
+            const year = parseInt(document.getElementById('year').value) + currentAge;
+            document.getElementById('info').innerText = `${city} | Anno ${year}`;
+            
+            // Primo turno: Prologo
+            playTurn(true);
         }
 
-        async function playTurn(customPrompt) {
+        async function playTurn(isFirstTurn = false) {
             const key = document.getElementById('apiKey').value.trim();
             const log = document.getElementById('log');
             const actionInput = document.getElementById('action');
-            const promptText = customPrompt || actionInput.value;
+            
+            let userAction = actionInput.value.trim();
+            if (isFirstTurn) {
+                userAction = "Genera un prologo dettagliato e crudo della mia nascita o situazione attuale.";
+            } else if (!userAction) {
+                userAction = "Passa un anno di vita cercando di sopravvivere e migliorare la mia condizione.";
+            }
 
-            const loading = document.createElement('p');
-            loading.innerText = "Consultando il destino...";
-            loading.className = "text-zinc-500 italic text-sm animate-pulse";
+            // UI: Loading
+            const loading = document.createElement('div');
+            loading.className = "text-zinc-600 italic text-[10px] uppercase tracking-widest animate-pulse py-4";
+            loading.innerText = "Le cronache si scrivono...";
             log.appendChild(loading);
+            log.scrollTop = log.scrollHeight;
 
-            // URL AGGIORNATO AL MODELLO CHE VEDI NELLO SCREENSHOT
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${key}`;
+            // Parametri del personaggio
+            const gender = document.getElementById('gender').value;
+            const city = document.getElementById('city').value;
+            const startYear = document.getElementById('year').value;
+            const wealth = document.getElementById('wealth').value;
+
+            // Costruzione Prompt
+            const prompt = `Sei il Narratore di 'Life finds a Way', un simulatore storico spietato.
+            PERSONAGGIO: ${gender}, Età attuale: ${currentAge} anni.
+            CONTESTO: Anno ${parseInt(startYear) + currentAge}, Città: ${city}, Ceto Sociale: ${wealth}/10.
+            AZIONE UTENTE: "${userAction}".
+            
+            REGOLE NARRATIVE:
+            1. Scrivi in ITALIANO. Stile letterario, crudo, storico.
+            2. Se è il prologo, descrivi l'ambiente e la famiglia.
+            3. Se non è il prologo, determina l'esito dell'azione basandoti sul ceto e l'epoca (le probabilità di morte o fallimento sono alte).
+            4. Includi sempre un dettaglio storico reale dell'epoca o del luogo.
+            5. Sii conciso ma evocativo (max 3 paragrafi).`;
+
+            // CHIAMATA API (Modello Gemini 3)
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${key}`;
 
             try {
-                const response = await fetch(url, {
+                const response = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: promptText }] }]
+                        contents: [{ parts: [{ text: prompt }] }]
                     })
                 });
 
                 const data = await response.json();
+                if (!response.ok) throw new Error(data.error ? data.error.message : "Errore");
+
+                const aiText = data.candidates[0].content.parts[0].text;
+                loading.remove();
+
+                // Mostra risposta
+                const entry = document.createElement('div');
+                entry.className = "fade-in space-y-4 border-l border-zinc-800 pl-6";
                 
-                if(!response.ok) {
-                    throw new Error(data.error ? data.error.message : "Errore");
+                // Se non è il primo turno, mostra cosa ha fatto l'utente
+                if (!isFirstTurn) {
+                    entry.innerHTML += `<p class="text-[9px] uppercase tracking-widest text-zinc-500 mb-2">Azione: ${userAction}</p>`;
                 }
 
-                loading.remove();
-                const aiResponse = data.candidates[0].content.parts[0].text;
-                
-                const entry = document.createElement('div');
-                entry.className = "border-l-2 border-white pl-6 mb-8 fade-in";
-                entry.innerHTML = aiResponse.replace(/\n/g, '<br>');
+                entry.innerHTML += `<div class="text-zinc-300 leading-relaxed text-sm md:text-base">${aiText.replace(/\n/g, '<br>')}</div>`;
                 log.appendChild(entry);
                 
-                actionInput.value = "";
-                window.scrollTo(0, document.body.scrollHeight);
+                // Aggiorna età e info
+                if (!isFirstTurn) {
+                    currentAge++;
+                    const year = parseInt(startYear) + currentAge;
+                    document.getElementById('info').innerText = `${city} | Anno ${year} (Età: ${currentAge})`;
+                }
 
-            } catch(e) {
-                loading.innerText = "ERRORE: " + e.message;
-                loading.style.color = "red";
-                console.error(e);
+                actionInput.value = "";
+                log.scrollTop = log.scrollHeight;
+                
+                gameHistory.push({ age: currentAge, action: userAction, story: aiText });
+
+            } catch (err) {
+                loading.innerHTML = `<span class="text-red-500 italic">IL DESTINO SI È INTERROTTO: ${err.message}</span>`;
             }
         }
     </script>
