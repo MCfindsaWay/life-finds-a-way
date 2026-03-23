@@ -1,126 +1,53 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Life finds a Way</title>
+    <meta charset="UTF-8"><title>Life finds a Way</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background: #000; color: #fff; font-family: sans-serif; }
-        input, textarea, select { background: #111; border: 1px solid #333; color: #fff; padding: 12px; width: 100%; outline: none; }
-        .hidden { display: none; }
-        .error-text { color: #ff4444; font-size: 10px; margin-top: 5px; }
-    </style>
+    <style>body{background:#000;color:#fff;font-family:sans-serif;}input,textarea{background:#111;border:1px solid #333;color:#fff;padding:12px;width:100%;}</style>
 </head>
-<body class="p-4">
-
-    <div id="setup" class="max-w-xl mx-auto space-y-6 mt-10">
-        <h1 class="text-4xl text-center italic font-serif">Life finds a Way</h1>
-        <div class="space-y-4 border-t border-zinc-800 pt-6">
-            <input type="password" id="apiKey" placeholder="Incolla qui la chiave API...">
-            <div class="grid grid-cols-2 gap-4">
-                <input type="number" id="year" value="1000">
-                <input type="text" id="city" placeholder="Città">
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                <select id="gender"><option>Maschio</option><option>Femmina</option></select>
-                <input type="number" id="age" value="0">
-            </div>
-            <div class="text-center">
-                <label class="text-xs text-gray-500 uppercase font-bold">Ricchezza: <span id="wNum">5</span></label>
-                <input type="range" id="wealth" min="1" max="10" value="5" oninput="document.getElementById('wNum').innerText=this.value" class="w-full mt-2">
-            </div>
-            <button onclick="startGame()" class="w-full bg-white text-black font-bold py-4 uppercase text-xs">Genera Destino</button>
-        </div>
+<body class="p-6">
+    <div id="setup" class="max-w-md mx-auto space-y-6">
+        <h1 class="text-3xl text-center italic">Life finds a Way</h1>
+        <input type="password" id="apiKey" placeholder="Incolla API Key">
+        <button onclick="start()" class="w-full bg-white text-black font-bold py-4 uppercase">Inizia</button>
     </div>
-
-    <div id="game" class="hidden fixed inset-0 flex flex-col bg-black">
-        <header class="p-4 border-b border-zinc-900 flex justify-between bg-black">
-            <span class="italic text-xl">Life finds a Way</span>
-            <span id="info" class="text-[10px] text-zinc-500 uppercase tracking-widest"></span>
-        </header>
-        <div id="log" class="flex-1 overflow-y-auto p-6 space-y-8 max-w-2xl mx-auto w-full"></div>
-        <footer class="p-6 border-t border-zinc-900 bg-black">
-            <textarea id="action" class="w-full h-24 mb-4 p-4 text-sm bg-zinc-950 border border-zinc-800 text-zinc-300" placeholder="Qual è la tua mossa?"></textarea>
-            <button onclick="playTurn(12)" class="bg-white text-black px-10 py-3 text-xs font-bold uppercase tracking-widest">Avanza 1 Anno</button>
-        </footer>
+    <div id="game" class="hidden fixed inset-0 flex flex-col bg-black p-6">
+        <div id="log" class="flex-1 overflow-y-auto space-y-6"></div>
+        <textarea id="action" class="mt-4" placeholder="Cosa fai?"></textarea>
+        <button onclick="turn()" class="bg-white text-black p-4 mt-2 font-bold">ESEGUI</button>
     </div>
-
     <script>
-        let gameHistory = [];
-        
-        // LISTA MODELLI DA TESTARE IN ORDINE DI PROBABILITÀ
-        const MODELS = [
-            "gemini-1.5-flash",
-            "gemini-1.5-flash-latest",
-            "gemini-1.5-pro",
-            "gemini-pro"
-        ];
-
-        function startGame() {
-            if(!document.getElementById('apiKey').value) return alert("Inserisci la chiave!");
-            document.getElementById('setup').style.display = 'none';
+        async function start() {
+            document.getElementById('setup').classList.add('hidden');
             document.getElementById('game').classList.remove('hidden');
-            const city = document.getElementById('city').value || "ignoto";
-            const year = document.getElementById('year').value;
-            document.getElementById('info').innerText = city + " | ANNO " + year;
-            playTurn(0);
+            turn();
         }
-
-        async function playTurn(months) {
+        async function turn() {
             const key = document.getElementById('apiKey').value.trim();
             const log = document.getElementById('log');
-            let actionText = document.getElementById('action').value || "Inizia la mia storia. Genera prologo dettagliato.";
-
-            const loading = document.createElement('div');
-            loading.innerHTML = "<p class='text-zinc-600 italic text-xs animate-pulse'>Interrogando il destino...</p>";
+            const action = document.getElementById('action').value || "Inizia la mia storia.";
+            const loading = document.createElement('p');
+            loading.innerText = "Scrivendo...";
             log.appendChild(loading);
-            log.scrollTop = log.scrollHeight;
 
-            const prompt = `GM di 'Life finds a Way'. PG: ${document.getElementById('gender').value}, ${document.getElementById('age').value} anni, Anno ${document.getElementById('year').value}, ${document.getElementById('city').value}, Ceto ${document.getElementById('wealth').value}/10. Azione: "${actionText}". Rispondi in italiano narrativo.`;
-
-            let success = false;
-            let lastError = "";
-
-            // CICLO DI TENTATIVI AUTOMATICI
-            for (let modelName of MODELS) {
-                try {
-                    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
-                    
-                    const response = await fetch(API_URL, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        const aiText = data.candidates[0].content.parts[0].text;
-                        
-                        loading.remove();
-                        const entry = document.createElement('div');
-                        entry.className = "border-l border-zinc-700 pl-4 py-2";
-                        entry.innerHTML = `<p class='text-sm text-zinc-200'>${aiText.replace(/\n/g, '<br>')}</p>`;
-                        log.appendChild(entry);
-                        
-                        document.getElementById('action').value = "";
-                        gameHistory.push({ action: actionText, response: aiText });
-                        success = true;
-                        break; // Esci dal ciclo se funziona!
-                    } else {
-                        const errData = await response.json();
-                        lastError = errData.error.message;
-                        console.log(`Modello ${modelName} fallito: ${lastError}`);
-                    }
-                } catch (e) {
-                    lastError = e.message;
-                }
+            // URL STABILE V1 (NON BETA)
+            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${key}`;
+            
+            try {
+                const res = await fetch(url, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({contents: [{parts: [{text: action + " (Rispondi in italiano narrativo storico)"}]}]})
+                });
+                const data = await res.json();
+                if(!res.ok) throw new Error(data.error.message);
+                loading.remove();
+                log.innerHTML += `<div class='border-l p-4 mb-4'>${data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>')}</div>`;
+                document.getElementById('action').value = "";
+                log.scrollTop = log.scrollHeight;
+            } catch(e) {
+                loading.innerText = "ERRORE: " + e.message;
             }
-
-            if (!success) {
-                loading.innerHTML = `<p class="error-text">ERRORE DEFINITIVO: ${lastError}<br>Controlla che l'API sia attiva su Google Cloud.</p>`;
-            }
-            log.scrollTop = log.scrollHeight;
         }
     </script>
 </body>
