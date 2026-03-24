@@ -15,36 +15,35 @@
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
         .serif { font-family: 'Crimson Pro', serif; }
         .card { background: #fff; border: 1px solid #d1ccc0; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .btn-main { background: var(--accent); color: #fff; font-weight: bold; padding: 14px; text-transform: uppercase; font-size: 11px; letter-spacing: 2px; border-radius: 4px; transition: all 0.3s ease; cursor: pointer; }
-        .btn-main:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(93, 46, 10, 0.2); }
+        .btn-main { background: var(--accent); color: #fff; font-weight: bold; padding: 14px; text-transform: uppercase; font-size: 11px; letter-spacing: 2px; border-radius: 6px; transition: all 0.3s ease; cursor: pointer; }
+        .btn-main:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(93, 46, 10, 0.3); }
         .hidden { display: none !important; }
-        .fade-in { animation: fadeIn 1s ease-in-out; }
+        .fade-in { animation: fadeIn 0.8s ease-in-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .pulse-btn { animation: pulseBtn 2s infinite; }
-        @keyframes pulseBtn { 0% { box-shadow: 0 0 0 0 rgba(93, 46, 10, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(93, 46, 10, 0); } 100% { box-shadow: 0 0 0 0 rgba(93, 46, 10, 0); } }
+        .pulse-btn { animation: pulseBtn 2.5s infinite; }
+        @keyframes pulseBtn { 0% { box-shadow: 0 0 0 0 rgba(93, 46, 10, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(93, 46, 10, 0); } 100% { box-shadow: 0 0 0 0 rgba(93, 46, 10, 0); } }
         #map { height: 350px; width: 100%; border-radius: 4px; border: 1px solid #d1ccc0; }
         input[type=range] { -webkit-appearance: none; background: #d1ccc0; height: 4px; border-radius: 2px; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
         .clean-text { margin-bottom: 0.75rem; }
     </style>
 </head>
 <body class="p-4">
 
     <header id="mainHeader" class="text-center py-8 fade-in transition-all duration-500">
-        <h1 class="text-5xl md:text-6xl serif italic font-bold text-[#5d2e0a]">Life finds a Way</h1>
-        <p class="text-[10px] tracking-[0.4em] text-stone-500 uppercase mt-4 font-bold">Simulatore di Esistenza Storica</p>
+        <h1 class="text-5xl md:text-7xl serif italic font-bold text-[#5d2e0a]">Life finds a Way</h1>
+        <p class="text-[11px] md:text-sm tracking-[0.4em] text-stone-500 uppercase mt-4 font-bold">IL PRIMO SIMULATORE DI VITA</p>
     </header>
 
     <main id="stepSplash" class="flex-1 flex flex-col justify-center items-center w-full max-w-xl mx-auto fade-in">
-        <button onclick="goToApi()" class="btn-main pulse-btn text-xs px-10 py-5">Preparati per la tua nuova vita</button>
+        <button onclick="goToApi()" class="btn-main pulse-btn text-lg md:text-xl px-8 py-6 w-full max-w-sm rounded-lg">Preparati per la tua nuova vita</button>
     </main>
 
-    <main id="stepApi" class="hidden flex-1 w-full max-w-md mx-auto fade-in">
-        <div class="card p-8 space-y-6 text-center mt-4">
-            <h2 class="serif text-2xl italic font-bold">Chiave dell'Akasha</h2>
-            <p class="text-xs text-stone-500">Inserisci il codice di accesso per connetterti ai fili del destino.</p>
-            <input type="password" id="apiKey" placeholder="API Key Gemini 3..." class="w-full border border-stone-300 p-3 rounded text-center focus:outline-none focus:border-[#5d2e0a]">
-            <button onclick="validateApi()" id="btnApi" class="w-full btn-main">Verifica Codice</button>
+    <main id="stepApi" class="hidden flex-1 flex-col justify-center items-center w-full max-w-md mx-auto fade-in mb-20">
+        <div class="card p-8 space-y-8 text-center w-full">
+            <h2 class="serif text-3xl italic font-bold text-[#5d2e0a]">Inserisci la chiave API di Gemini</h2>
+            <input type="password" id="apiKey" placeholder="AIza..." class="w-full border border-stone-300 p-4 rounded text-center focus:outline-none focus:border-[#5d2e0a] text-lg">
+            <button onclick="validateApi()" id="btnApi" class="w-full btn-main text-sm py-4">Avvia</button>
             <p id="apiError" class="text-red-600 text-[10px] font-bold uppercase hidden"></p>
         </div>
     </main>
@@ -88,7 +87,7 @@
                 </div>
                 <input type="range" id="wealth" min="1" max="10" value="5" oninput="document.getElementById('wealthVal').innerText = this.value" class="w-full">
             </div>
-            <button onclick="goToMap()" class="w-full btn-main">Mappa del Mondo</button>
+            <button onclick="goToMap()" class="w-full btn-main">Scegli Luogo sulla Mappa</button>
         </div>
     </main>
 
@@ -127,7 +126,6 @@
 
     <script>
         let map, drawnItems, spawnCoords = null;
-        // Struttura dati fissa. Usiamo currentYear e currentAge come numeri reali.
         let pData = { name: "", place: "", state: "", currentYear: 2020, currentAge: 17, wealth: 5, gender: "", type: "" };
 
         function toggleScreen(h, s) { 
@@ -144,26 +142,25 @@
             const err = document.getElementById('apiError');
             const btn = document.getElementById('btnApi');
             
-            if(!key) { err.innerText = "Inserisci una chiave."; err.classList.remove('hidden'); return; }
+            if(!key) { err.innerText = "Devi inserire la chiave per accedere."; err.classList.remove('hidden'); return; }
             
             err.classList.add('hidden');
             btn.innerText = "Verifica in corso...";
             btn.disabled = true;
 
             try {
-                // Test leggero sull'API per vedere se è valida
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
                 if(res.ok) {
                     toggleScreen('stepApi', 'stepMenu');
                 } else {
-                    err.innerText = "Chiave non valida o permessi mancanti.";
+                    err.innerText = "Chiave non valida. Controlla e riprova.";
                     err.classList.remove('hidden');
                 }
             } catch(e) {
                 err.innerText = "Errore di connessione a Google.";
                 err.classList.remove('hidden');
             }
-            btn.innerText = "Verifica Codice";
+            btn.innerText = "Avvia";
             btn.disabled = false;
         }
 
@@ -190,7 +187,7 @@
         }
 
         async function preSpawn(mode) {
-            if (mode === 'manual' && !spawnCoords) return alert("Traccia un'area o metti un marker sulla mappa!");
+            if (mode === 'manual' && !spawnCoords) return alert("Traccia un'area o metti un marker sulla mappa prima di generare!");
             const key = document.getElementById('apiKey').value;
             
             const jsonFormat = 'Rispondi SOLO con questo JSON esatto: {"name": "Nome", "place": "Città", "state": "Nazione", "currentYear": 1200, "gender": "Maschio/Femmina", "currentAge": 20, "wealth": 5}';
@@ -201,13 +198,21 @@
             } else if (mode === 'ai') {
                 prompt = `Genera un personaggio seguendo queste direttive: "${document.getElementById('iaPrompt').value}". ${jsonFormat}`;
             } else {
-                const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${spawnCoords.lat}&lon=${spawnCoords.lng}&format=json&accept-language=it`).then(r => r.json());
-                pData.place = geo.address.city || geo.address.town || geo.address.state || "Luogo Ignoto";
-                pData.state = geo.address.country || "Terra Incognita";
-                pData.currentYear = Number(document.getElementById('year').value);
-                pData.gender = document.getElementById('gender').value;
-                pData.currentAge = Number(document.getElementById('age').value);
-                pData.wealth = Number(document.getElementById('wealth').value);
+                // Geo-decoding robusto (Previene crash se si clicca in mezzo al mare)
+                try {
+                    const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${spawnCoords.lat}&lon=${spawnCoords.lng}&format=json&accept-language=it`).then(r => r.json());
+                    pData.place = geo?.address?.city || geo?.address?.town || geo?.address?.village || geo?.address?.state || "Luogo Ignoto";
+                    pData.state = geo?.address?.country || "Terra Incognita";
+                } catch(err) {
+                    pData.place = "Luogo remoto";
+                    pData.state = "Mondo sconosciuto";
+                }
+                
+                pData.currentYear = Number(document.getElementById('year').value) || 1000;
+                pData.gender = document.getElementById('gender').value || "Maschio";
+                pData.currentAge = Number(document.getElementById('age').value) || 0;
+                pData.wealth = Number(document.getElementById('wealth').value) || 5;
+                
                 prompt = `Genera Nome e Cognome storicamente accurati per un ${pData.gender} a ${pData.place} nell'anno ${pData.currentYear}. Rispondi SOLO col nome.`;
             }
 
@@ -242,19 +247,18 @@
                         Anno: ${pData.currentYear} <br> Età: ${pData.currentAge} <br> Ricchezza: ${pData.wealth}/10
                     </p>`;
                 
-                // Nascondi Header grande se andiamo al gioco per fare spazio
                 if(mode === 'manual') toggleScreen('stepMap', 'confirm');
                 else toggleScreen('stepMenu', 'confirm');
 
             } catch (e) {
-                alert("Anomalia temporale. L'IA non ha risposto correttamente. Riprova.");
+                alert("Si è verificato un errore nella generazione. Riprova.");
             }
         }
 
         async function acceptDestiny() {
             toggleScreen('confirm', 'game');
-            // Riduciamo un po' il titolo globale per fare spazio alla chat
-            document.getElementById('mainHeader').classList.add('scale-75', '-mt-6', 'mb-0', 'py-2');
+            // Riduciamo la dimensione dell'header globale per dare spazio alla chat
+            document.getElementById('mainHeader').classList.add('scale-75', '-mt-8', 'mb-0', 'py-2');
             await playTurn(0, true);
         }
 
@@ -273,7 +277,7 @@
             if (isFirst) {
                 prompt = `Sei un Master Storico. Genera il RESOCONTO INIZIALE COMPLETO per: ${pData.name}, ${pData.gender}, a ${pData.place}, ${pData.state}.
                 Siamo nell'anno esatto ${Math.floor(pData.currentYear)}. Il personaggio ha ESATTAMENTE ${Math.floor(pData.currentAge)} anni. Ricchezza: ${pData.wealth}/10. 
-                Struttura l'output in modo semplice e organizzato con queste sezioni usando queste emoji (NON USARE ASTERISCHI O HASHTAG IN NESSUN CASO):
+                Struttura l'output in modo leggibile e organizzato con queste sezioni usando queste emoji (NON USARE ASTERISCHI O HASHTAG IN NESSUN CASO):
                 🌍 Contesto storico e problemi del momento:
                 👨‍👩‍👦 Genitori o Tutori (nomi, lavori, vivi o morti):
                 🤝 Alleati e Conoscenti:
@@ -298,10 +302,8 @@
                 const data = await res.json();
                 loading.remove();
 
-                // Pulizia radicale markdown
                 let text = data.candidates[0].content.parts[0].text.replace(/[*#]/g, ''); 
                 
-                // Formattazione Immagine
                 const imgMatch = text.match(/\[IMG: (.*?)\]/i);
                 let imgTag = "";
                 if(imgMatch) {
@@ -317,7 +319,6 @@
                 div.innerHTML = `${imgTag}<div class="text-lg leading-relaxed text-stone-800">${formattedText}</div>`;
                 log.appendChild(div);
                 
-                // Aggiornamento Matematico Pulito
                 if(!isFirst) {
                     pData.currentAge += (m / 12);
                     pData.currentYear += (m / 12);
