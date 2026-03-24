@@ -21,6 +21,7 @@
         #map { height: 350px; width: 100%; border-radius: 4px; border: 1px solid #d1ccc0; }
         input[type=range] { -webkit-appearance: none; background: #d1ccc0; height: 3px; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+        .clean-text { margin-bottom: 0.75rem; }
     </style>
 </head>
 <body class="min-h-screen p-4 flex flex-col items-center">
@@ -37,8 +38,8 @@
                 <button onclick="spawnType('manual')" class="btn-main">🛠️ Configurazione Manuale</button>
                 <div class="border-t border-stone-200 pt-4 mt-2">
                     <label class="text-[10px] font-bold text-stone-500 uppercase mb-2 block">🧠 Genesi tramite IA</label>
-                    <textarea id="iaPrompt" placeholder="Es: Voglio essere un giovane nobile nella Firenze del 1400 coinvolto in una congiura..." class="w-full border p-3 text-sm rounded h-20 bg-stone-50"></textarea>
-                    <button onclick="spawnType('ai')" class="w-full btn-main mt-2 bg-stone-800">Crea dal pensiero</button>
+                    <textarea id="iaPrompt" placeholder="Es: Voglio essere la figlia segreta di un faraone egizio nel 1300 a.C..." class="w-full border p-3 text-sm rounded h-20 bg-stone-50"></textarea>
+                    <button onclick="spawnType('ai')" class="w-full btn-main mt-2 bg-stone-800">Incarna questo destino</button>
                 </div>
             </div>
         </div>
@@ -50,25 +51,25 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="text-[9px] font-bold uppercase text-stone-500">📅 Anno Simulazione</label>
-                    <input type="number" id="year" value="1000">
+                    <input type="number" id="year" value="1000" class="w-full border p-2 rounded">
                 </div>
                 <div>
                     <label class="text-[9px] font-bold uppercase text-stone-500">👤 Sesso</label>
-                    <select id="gender"><option>Maschio</option><option>Femmina</option></select>
+                    <select id="gender" class="w-full border p-2 rounded"><option>Maschio</option><option>Femmina</option></select>
                 </div>
             </div>
             <div>
                 <label class="text-[9px] font-bold uppercase text-stone-500">⏳ Età Iniziale</label>
-                <input type="number" id="age" value="0">
+                <input type="number" id="age" value="0" class="w-full border p-2 rounded">
             </div>
-            <div class="space-y-1">
+            <div class="space-y-1 py-2">
                 <div class="flex justify-between text-[9px] font-bold uppercase text-stone-500">
                     <span>💰 Ricchezza Famiglia</span>
-                    <span id="wealthVal">5</span>
+                    <span id="wealthVal" class="text-lg text-[#5d2e0a]">5</span>
                 </div>
-                <input type="range" id="wealth" min="1" max="10" value="5" oninput="document.getElementById('wealthVal').innerText = this.value">
+                <input type="range" id="wealth" min="1" max="10" value="5" oninput="document.getElementById('wealthVal').innerText = this.value" class="w-full">
             </div>
-            <button onclick="goToMap()" class="w-full btn-main">Scegli Luogo</button>
+            <button onclick="goToMap()" class="w-full btn-main">Scegli Luogo sulla Mappa</button>
         </div>
     </div>
 
@@ -80,26 +81,26 @@
 
     <div id="confirm" class="hidden fixed inset-0 z-50 bg-stone-100/98 flex items-center justify-center p-4 text-center">
         <div class="card max-w-md w-full p-8 space-y-6 border-2 border-[#5d2e0a]">
-            <h2 class="serif italic text-3xl">Visto del Passaporto</h2>
+            <h2 class="serif italic text-3xl">Il Filo è Tessuto</h2>
             <div id="miniResoconto" class="serif text-xl space-y-1 border-y py-4"></div>
             <div class="flex gap-2">
-                <button onclick="acceptDestiny()" class="flex-1 btn-main">Accetta</button>
-                <button onclick="location.reload()" class="flex-1 border border-stone-300 text-[9px] uppercase">Rinnega</button>
+                <button onclick="acceptDestiny()" class="flex-1 btn-main">Accetta e Vivi</button>
+                <button onclick="location.reload()" class="flex-1 border border-stone-300 text-[9px] uppercase font-bold">Rinnega Tutto</button>
             </div>
         </div>
     </div>
 
-    <div id="game" class="hidden max-w-3xl w-full flex flex-col h-[90vh]">
+    <div id="game" class="hidden max-w-3xl w-full flex flex-col h-[95vh] mx-auto py-4">
         <header class="flex justify-between items-center border-b border-stone-300 pb-4 mb-6">
             <h2 class="serif italic text-2xl text-[#5d2e0a]">Cronache di Vita</h2>
             <div id="gameInfo" class="text-[10px] font-bold text-stone-500 uppercase tracking-widest text-right"></div>
         </header>
-        <div id="log" class="flex-1 overflow-y-auto space-y-6 pr-2"></div>
+        <div id="log" class="flex-1 overflow-y-auto space-y-8 pr-2"></div>
         <footer class="mt-4 pt-4 border-t border-stone-300">
-            <textarea id="action" class="w-full h-20 p-3 border rounded text-sm mb-3 shadow-inner" placeholder="Cosa decidi di fare?"></textarea>
+            <textarea id="action" class="w-full h-20 p-3 border border-stone-300 rounded text-sm mb-3 shadow-inner" placeholder="Qual è la tua prossima mossa?"></textarea>
             <div class="flex gap-2">
-                <button onclick="playTurn(1)" class="flex-1 border border-stone-400 py-3 text-[9px] uppercase font-bold">1 Mese</button>
-                <button onclick="playTurn(6)" class="flex-1 border border-stone-400 py-3 text-[9px] uppercase font-bold">6 Mesi</button>
+                <button onclick="playTurn(1)" class="flex-1 border border-stone-400 py-3 text-[9px] uppercase font-bold hover:bg-stone-100">1 Mese</button>
+                <button onclick="playTurn(6)" class="flex-1 border border-stone-400 py-3 text-[9px] uppercase font-bold hover:bg-stone-100">6 Mesi</button>
                 <button onclick="playTurn(12)" class="flex-1 btn-main">1 Anno</button>
             </div>
         </footer>
@@ -118,61 +119,86 @@
             if(!document.getElementById('apiKey').value) return alert("Inserisci l'API Key!");
             pData.type = type;
             if(type === 'manual') toggleScreen('step0', 'stepManual');
-            else if(type === 'random') preSpawn('random');
-            else if(type === 'ai') preSpawn('ai');
+            else preSpawn(type);
         }
 
         function goToMap() { 
             toggleScreen('stepManual', 'stepMap'); 
-            initMap(); 
-        }
-
-        function initMap() {
-            if (map) return;
-            map = L.map('map').setView([41.9, 12.5], 3);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
-            drawnItems = new L.FeatureGroup();
-            map.addLayer(drawnItems);
-            new L.Control.Draw({ edit: { featureGroup: drawnItems }, draw: { polyline: false, circle: false, marker: true, polygon: true, rectangle: true } }).addTo(map);
-            map.on(L.Draw.Event.CREATED, e => { drawnItems.clearLayers(); drawnItems.addLayer(e.layer); spawnCoords = (e.layer instanceof L.Marker) ? e.layer.getLatLng() : e.layer.getBounds().getCenter(); });
+            if (!map) {
+                map = L.map('map').setView([41.9, 12.5], 3);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+                drawnItems = new L.FeatureGroup();
+                map.addLayer(drawnItems);
+                new L.Control.Draw({ edit: { featureGroup: drawnItems }, draw: { polyline: false, circle: false, marker: true, polygon: true, rectangle: true } }).addTo(map);
+                map.on(L.Draw.Event.CREATED, e => { 
+                    drawnItems.clearLayers(); 
+                    drawnItems.addLayer(e.layer); 
+                    spawnCoords = (e.layer instanceof L.Marker) ? e.layer.getLatLng() : e.layer.getBounds().getCenter(); 
+                });
+            }
         }
 
         async function preSpawn(mode) {
+            if (mode === 'manual' && !spawnCoords) return alert("Traccia un'area o metti un marker sulla mappa!");
             const key = document.getElementById('apiKey').value;
+            
+            // Format rigido per forzare i dati corretti nel JSON
+            const jsonFormat = 'Rispondi SOLO con questo JSON esatto: {"name": "Nome e Cognome", "place": "Città", "state": "Nazione", "year": 1200, "gender": "Maschio/Femmina", "age": 0, "wealth": 5}';
             let prompt = "";
 
             if(mode === 'random') {
-                prompt = "Genera un personaggio casuale in un'epoca storica tra l'anno 1 e il 1800. Fornisci: Nome, Cognome, Luogo, Stato, Anno, Sesso, Età(0), Ricchezza(1-10). Rispondi in formato JSON semplice.";
+                prompt = `Genera un personaggio casuale in un anno casuale tra 1 e 1800. ${jsonFormat}`;
             } else if (mode === 'ai') {
-                prompt = `Crea un personaggio basandoti su questa richiesta: "${document.getElementById('iaPrompt').value}". Fornisci: Nome, Cognome, Luogo, Stato, Anno, Sesso, Età, Ricchezza(1-10). Rispondi in JSON.`;
+                prompt = `Genera un personaggio seguendo queste direttive: "${document.getElementById('iaPrompt').value}". ${jsonFormat}`;
             } else {
                 const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${spawnCoords.lat}&lon=${spawnCoords.lng}&format=json&accept-language=it`).then(r => r.json());
-                pData.place = geo.address.city || geo.address.village || "Villaggio Ignoto";
-                pData.state = geo.address.country || "Regno Ignoto";
+                pData.place = geo.address.city || geo.address.village || geo.address.state || "Luogo Ignoto";
+                pData.state = geo.address.country || "Terra Incognita";
                 pData.year = document.getElementById('year').value;
                 pData.gender = document.getElementById('gender').value;
                 pData.age = document.getElementById('age').value;
                 pData.wealth = document.getElementById('wealth').value;
-                prompt = `Genera un Nome e Cognome storicamente accurati per un ${pData.gender} a ${pData.place} nel ${pData.year}. Rispondi solo Nome e Cognome.`;
+                prompt = `Genera Nome e Cognome storicamente accurati per un ${pData.gender} a ${pData.place} nell'anno ${pData.year}. Rispondi SOLO col nome.`;
             }
 
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${key}`, {
-                method: "POST", headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({contents: [{parts: [{text: prompt}]}]})
-            });
-            const data = await res.json();
-            const rawText = data.candidates[0].content.parts[0].text;
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${key}`, {
+                    method: "POST", headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({contents: [{parts: [{text: prompt}]}]})
+                });
+                const data = await res.json();
+                const rawText = data.candidates[0].content.parts[0].text;
 
-            if(mode !== 'manual') {
-                try {
-                    const cleanJson = rawText.replace(/```json|```/g, '');
-                    const parsed = JSON.parse(cleanJson);
-                    pData = {...pData, ...parsed};
-                } catch(e) { pData.name = rawText; }
-            } else { pData.name = rawText; }
+                if(mode !== 'manual') {
+                    // Estrazione robusta del JSON
+                    const match = rawText.match(/\{[\s\S]*\}/);
+                    if (match) {
+                        const parsed = JSON.parse(match[0]);
+                        pData.name = parsed.name || "Sconosciuto";
+                        pData.place = parsed.place || "Ignoto";
+                        pData.state = parsed.state || "Ignoto";
+                        pData.year = parsed.year || 1000;
+                        pData.gender = parsed.gender || "Maschio";
+                        pData.age = parsed.age || 0;
+                        pData.wealth = parsed.wealth || 5;
+                    } else {
+                        throw new Error("JSON non valido");
+                    }
+                } else { 
+                    pData.name = rawText.replace(/[*#"']/g, '').trim(); 
+                }
 
-            document.getElementById('miniResoconto').innerHTML = `<b>${pData.name}</b><br><small>${pData.place}, ${pData.state}</small><br><span style="font-size:12px">Anno ${pData.year} | Età ${pData.age} | 💰 ${pData.wealth}/10</span>`;
-            toggleScreen(mode === 'manual' ? 'stepMap' : 'step0', 'confirm');
+                document.getElementById('miniResoconto').innerHTML = `
+                    <p class="font-bold text-2xl">${pData.name}</p>
+                    <p class="text-stone-600 text-sm italic">${pData.place}, ${pData.state}</p>
+                    <p class="text-[10px] uppercase tracking-widest mt-4">Anno: ${pData.year} | Età: ${pData.age} | 💰 ${pData.wealth}/10</p>`;
+                
+                toggleScreen(mode === 'manual' ? 'stepMap' : 'step0', 'confirm');
+
+            } catch (e) {
+                alert("Si è verificata un'anomalia temporale. Riprova.");
+                console.error(e);
+            }
         }
 
         async function acceptDestiny() {
@@ -183,18 +209,35 @@
         async function playTurn(m, isFirst = false) {
             const key = document.getElementById('apiKey').value;
             const log = document.getElementById('log');
-            const action = isFirst ? "RESOCONTO INIZIALE. Presentami. Famiglia, Possedimenti, Ruolo Sociale, Nemici e Amore/Matrimoni." : document.getElementById('action').value;
+            const action = document.getElementById('action').value;
             
             const loading = document.createElement('div');
             loading.innerText = "Sincronizzazione cronache...";
-            loading.className = "serif italic text-stone-400 py-2";
+            loading.className = "serif italic text-stone-400 py-2 animate-pulse";
             log.appendChild(loading);
+            log.scrollTop = log.scrollHeight;
 
-            const prompt = `Sei un Master Storico. Niente markdown (no asterischi, no cancelletti). Sii diretto e preciso. 
-                Focus: Relazioni amorose, matrimoni politici, status. Massimo 4 frasi per turno. 
-                Protagonista: ${pData.name}, ${pData.gender}, ${pData.place}, Anno ${parseInt(pData.year) + parseInt(pData.age)}. 
-                Ricchezza: ${pData.wealth}/10. Azione: ${action}.
-                Includi alla fine [IMG: keywords in inglese] per una scena rappresentativa. Usa emoji.`;
+            let prompt = "";
+            const currentYear = Math.floor(parseInt(pData.year) + parseFloat(pData.age));
+            
+            if (isFirst) {
+                prompt = `Sei un Master Storico. Genera il RESOCONTO INIZIALE COMPLETO per: ${pData.name}, ${pData.gender}, a ${pData.place}, ${pData.state}, Anno ${currentYear}. Ricchezza: ${pData.wealth}/10. 
+                Struttura l'output in modo semplice, leggibile e organizzato con queste sezioni usando queste emoji (NON USARE ASTERISCHI O HASHTAG):
+                🌍 Contesto e problemi locali: (descrivi)
+                👨‍👩‍👦 Genitori: (nomi, lavori, salute)
+                🤝 Alleati e Conoscenti: (descrivi)
+                🏰 Possedimenti: (descrivi)
+                ⚖️ Ruolo Sociale: (descrivi)
+                ⚔️ Nemici o Pericoli: (descrivi)
+                💍 Prospettive Amorose/Matrimoniali: (descrivi in base all'epoca)
+                Aggiungi in fondo: [IMG: keywords storiche in inglese].`;
+            } else {
+                prompt = `Sei un Master Storico. Protagonista: ${pData.name}, ${pData.gender}, Anno ${currentYear}. Ricchezza: ${pData.wealth}/10. 
+                Azione: "${action}".
+                Scrivi in modo diretto, realistico e chiaro. MASSIMO 3 o 4 frasi in totale. Dai rilevanza anche alle relazioni interpersonali e amorose se sensato. 
+                DIVIETO ASSOLUTO DI USARE MARKDOWN (niente asterischi o hashtag). 
+                Aggiungi in fondo: [IMG: keywords dell'azione in inglese].`;
+            }
 
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${key}`, {
@@ -204,25 +247,35 @@
                 const data = await res.json();
                 loading.remove();
 
-                let text = data.candidates[0].content.parts[0].text.replace(/[*#]/g, ''); // Pulizia forzata
+                // Pulizia totale da asterischi e hashtag
+                let text = data.candidates[0].content.parts[0].text.replace(/[*#]/g, ''); 
                 
-                const imgMatch = text.match(/\[IMG: (.*?)\]/);
+                // Formattazione Immagine
+                const imgMatch = text.match(/\[IMG: (.*?)\]/i);
                 let imgTag = "";
                 if(imgMatch) {
-                    imgTag = `<img src="https://source.unsplash.com/800x300/?${encodeURIComponent(imgMatch[1])}" class="w-full h-32 object-cover rounded mb-3 border shadow-sm">`;
+                    imgTag = `<img src="https://source.unsplash.com/800x350/?${encodeURIComponent(imgMatch[1].trim())}" class="w-full h-40 object-cover rounded mb-4 border border-stone-200 shadow-sm">`;
                     text = text.replace(imgMatch[0], "");
                 }
 
+                // Aggiunta testo formattato al log
                 const div = document.createElement('div');
-                div.className = "serif p-5 bg-white border border-stone-200 rounded shadow-sm fade-in";
-                div.innerHTML = `${imgTag}<div class="text-lg leading-relaxed">${text.replace(/\n/g, '<br>')}</div>`;
+                div.className = "serif p-6 bg-white border border-stone-200 rounded shadow-sm fade-in";
+                
+                // Dividiamo per andare a capo in modo pulito (soprattutto per il primo resoconto)
+                const formattedText = text.split('\n').filter(line => line.trim() !== '').map(line => `<p class="clean-text">${line.trim()}</p>`).join('');
+
+                div.innerHTML = `${imgTag}<div class="text-lg leading-relaxed text-stone-800">${formattedText}</div>`;
                 log.appendChild(div);
                 
                 if(!isFirst) pData.age = parseFloat(pData.age) + (m/12);
                 document.getElementById('gameInfo').innerText = `${pData.name} | Anno ${Math.floor(parseInt(pData.year) + pData.age)} | Età: ${Math.floor(pData.age)}`;
                 document.getElementById('action').value = "";
                 log.scrollTop = log.scrollHeight;
-            } catch(e) { console.error(e); }
+            } catch(e) { 
+                loading.innerText = "Errore di connessione. Le cronache sono sbiadite."; 
+                console.error(e); 
+            }
         }
     </script>
 </body>
