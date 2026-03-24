@@ -22,7 +22,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .pulse-btn { animation: pulseBtn 2.5s infinite; }
         @keyframes pulseBtn { 0% { box-shadow: 0 0 0 0 rgba(93, 46, 10, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(93, 46, 10, 0); } 100% { box-shadow: 0 0 0 0 rgba(93, 46, 10, 0); } }
-        #map { height: 350px; width: 100%; border-radius: 4px; border: 1px solid #d1ccc0; }
+        #map { height: 350px; width: 100%; border-radius: 4px; border: 1px solid #d1ccc0; cursor: crosshair; }
         input[type=range] { -webkit-appearance: none; background: #d1ccc0; height: 4px; border-radius: 2px; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
         .clean-text { margin-bottom: 0.75rem; }
@@ -93,6 +93,7 @@
 
     <main id="stepMap" class="hidden flex-1 w-full max-w-4xl mx-auto fade-in text-center">
         <h2 class="serif text-3xl italic font-bold mb-4">Traccia il tuo destino</h2>
+        <p class="text-[10px] uppercase text-stone-500 mb-4 font-bold">Clicca sulla mappa per piazzare un punto o usa gli strumenti per le aree</p>
         <div id="map" class="shadow-sm"></div>
         <button onclick="preSpawn('manual')" class="btn-main w-full py-5 mt-4">Genera Identità</button>
     </main>
@@ -103,7 +104,7 @@
             <div id="miniResoconto" class="serif text-xl space-y-1 border-y border-stone-200 py-6"></div>
             <div class="flex gap-3">
                 <button onclick="acceptDestiny()" class="flex-1 btn-main">Accetta e Vivi</button>
-                <button onclick="location.reload()" class="flex-1 border border-stone-300 text-[10px] uppercase font-bold hover:bg-stone-50 transition-colors">Rinnega Tutto</button>
+                <button onclick="denyDestiny()" class="flex-1 border border-stone-300 text-[10px] uppercase font-bold hover:bg-stone-50 transition-colors">Rinnega</button>
             </div>
         </div>
     </div>
@@ -177,17 +178,42 @@
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
                 drawnItems = new L.FeatureGroup();
                 map.addLayer(drawnItems);
+                
                 new L.Control.Draw({ edit: { featureGroup: drawnItems }, draw: { polyline: false, circle: false, marker: true, polygon: true, rectangle: true } }).addTo(map);
+                
+                // SISTEMA DI SELEZIONE SEMPLIFICATA: Un semplice click sulla mappa mette un punto
+                map.on('click', function(e) {
+                    drawnItems.clearLayers();
+                    L.marker(e.latlng).addTo(drawnItems);
+                    spawnCoords = e.latlng;
+                });
+
+                // Gestione degli strumenti a poligono
                 map.on(L.Draw.Event.CREATED, e => { 
                     drawnItems.clearLayers(); 
                     drawnItems.addLayer(e.layer); 
-                    spawnCoords = (e.layer instanceof L.Marker) ? e.layer.getLatLng() : e.layer.getBounds().getCenter(); 
+                    if(e.layerType === 'marker') {
+                        spawnCoords = e.layer.getLatLng();
+                    } else {
+                        spawnCoords = e.layer.getBounds().getCenter();
+                    }
                 });
+            }
+            // Forza l'aggiornamento visivo della mappa quando viene svelata
+            setTimeout(() => map.invalidateSize(), 100);
+        }
+
+        // TASTO RINNEGA: Ritorna alla schermata precedente invece di ricaricare il sito
+        function denyDestiny() {
+            if(pData.type === 'manual') {
+                toggleScreen('confirm', 'stepMap');
+            } else {
+                toggleScreen('confirm', 'stepMenu');
             }
         }
 
         async function preSpawn(mode) {
-            if (mode === 'manual' && !spawnCoords) return alert("Traccia un'area o metti un marker sulla mappa prima di generare!");
+            if (mode === 'manual' && !spawnCoords) return alert("Clicca sulla mappa o traccia un'area prima di generare!");
             const key = document.getElementById('apiKey').value;
             
             const jsonFormat = 'Rispondi SOLO con questo JSON esatto: {"name": "Nome", "place": "Città", "state": "Nazione", "currentYear": 1200, "gender": "Maschio/Femmina", "currentAge": 20, "wealth": 5}';
@@ -198,7 +224,7 @@
             } else if (mode === 'ai') {
                 prompt = `Genera un personaggio seguendo queste direttive: "${document.getElementById('iaPrompt').value}". ${jsonFormat}`;
             } else {
-                // Geo-decoding robusto (Previene crash se si clicca in mezzo al mare)
+                // Decodifica Geografia Sicura
                 try {
                     const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${spawnCoords.lat}&lon=${spawnCoords.lng}&format=json&accept-language=it`).then(r => r.json());
                     pData.place = geo?.address?.city || geo?.address?.town || geo?.address?.village || geo?.address?.state || "Luogo Ignoto";
@@ -257,7 +283,6 @@
 
         async function acceptDestiny() {
             toggleScreen('confirm', 'game');
-            // Riduciamo la dimensione dell'header globale per dare spazio alla chat
             document.getElementById('mainHeader').classList.add('scale-75', '-mt-8', 'mb-0', 'py-2');
             await playTurn(0, true);
         }
@@ -277,7 +302,7 @@
             if (isFirst) {
                 prompt = `Sei un Master Storico. Genera il RESOCONTO INIZIALE COMPLETO per: ${pData.name}, ${pData.gender}, a ${pData.place}, ${pData.state}.
                 Siamo nell'anno esatto ${Math.floor(pData.currentYear)}. Il personaggio ha ESATTAMENTE ${Math.floor(pData.currentAge)} anni. Ricchezza: ${pData.wealth}/10. 
-                Struttura l'output in modo leggibile e organizzato con queste sezioni usando queste emoji (NON USARE ASTERISCHI O HASHTAG IN NESSUN CASO):
+                Struttura l'output in modo semplice e organizzato con queste sezioni usando queste emoji (NON USARE ASTERISCHI O HASHTAG IN NESSUN CASO):
                 🌍 Contesto storico e problemi del momento:
                 👨‍👩‍👦 Genitori o Tutori (nomi, lavori, vivi o morti):
                 🤝 Alleati e Conoscenti:
